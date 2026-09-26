@@ -3,7 +3,8 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from config import settings
-from models import ApiKey, Base, MerchantConnection
+from models import ApiKey, Base, Merchant, MerchantConnection
+from auth import hash_password
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +25,35 @@ async def init_db() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Seed Default Data
+    # Seed Default Master Merchant
     async with async_session() as session:
-        # 1. Seed Master ApiKey
-        stmt_key = select(ApiKey).limit(1)
+        stmt_m = select(Merchant).where(Merchant.id == 1)
+        res_m = await session.execute(stmt_m)
+        master_merchant = res_m.scalar_one_or_none()
+        
+        if not master_merchant:
+            master_merchant = Merchant(
+                id=1,
+                email="admin@nirvapay.dasrams.biz.id",
+                password_hash=hash_password("admin123"),
+                business_name="Aeternum Kreasikan Bersama",
+                owner_name="Rama Danadipa",
+                phone_number="089697100997",
+                static_qris_payload=settings.DEFAULT_STATIC_QRIS,
+                webhook_secret="AeternumGoBiz2026Secret",
+                is_active=True,
+                is_admin=True,
+            )
+            session.add(master_merchant)
+            await session.commit()
+
+        # Seed Master ApiKey
+        stmt_key = select(ApiKey).where(ApiKey.merchant_id == 1)
         res_key = await session.execute(stmt_key)
         if not res_key.scalar_one_or_none():
             master_key = ApiKey(
-                name="Production Default Key",
+                merchant_id=1,
+                name="Production Live Key",
                 public_key=settings.MASTER_PUBLIC_KEY,
                 secret_key=settings.MASTER_SECRET_KEY,
                 is_sandbox=False,
@@ -39,6 +61,7 @@ async def init_db() -> None:
                 ip_whitelist="",
             )
             sandbox_key = ApiKey(
+                merchant_id=1,
                 name="Sandbox Testing Key",
                 public_key="pub_sand_nirva_7730129bc4",
                 secret_key="sec_sand_nirva_0128fb6541cc",
@@ -48,7 +71,7 @@ async def init_db() -> None:
             )
             session.add_all([master_key, sandbox_key])
 
-        # 2. Seed Default Merchant Connections
+        # Seed Merchant Connections
         channels = [
             ("gopay", "GoPay Merchant (GoBiz)", True, "Active & Polling", {"mode": "notification_and_direct", "min_unique": 1, "max_unique": 499}),
             ("dana", "DANA Forwarder Node", True, "Connected", {"webhook_secret": "nirva_dana_2026", "auto_approve": True}),
@@ -58,10 +81,14 @@ async def init_db() -> None:
         ]
 
         for code, name, is_act, status_txt, cfg in channels:
-            stmt_c = select(MerchantConnection).where(MerchantConnection.channel == code)
+            stmt_c = select(MerchantConnection).where(
+                MerchantConnection.merchant_id == 1,
+                MerchantConnection.channel == code,
+            )
             res_c = await session.execute(stmt_c)
             if not res_c.scalar_one_or_none():
                 conn_item = MerchantConnection(
+                    merchant_id=1,
                     channel=code,
                     name=name,
                     is_active=is_act,
@@ -71,4 +98,4 @@ async def init_db() -> None:
                 session.add(conn_item)
 
         await session.commit()
-    logger.info("NirvaPay Database initialized successfully.")
+    logger.info("NirvaPay Multi-Tenant Database initialized successfully.")

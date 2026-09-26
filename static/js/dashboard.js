@@ -344,6 +344,17 @@ function createToastContainer() {
     return div;
 }
 
+// Logout
+async function handleLogout() {
+    if (!confirm('Apakah Anda yakin ingin keluar dari console?')) return;
+    try {
+        await fetch('/api/v1/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    } catch (e) {
+        window.location.href = '/login';
+    }
+}
+
 // Simulator Test Mutation
 async function simulateIncomingMutation() {
     const amount = prompt("Masukkan nominal mutasi untuk simulasi (Contoh: 15234):", "15000");

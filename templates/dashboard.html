@@ -82,13 +82,19 @@
             <div class="flex items-center gap-4">
                 <h1 class="text-base font-bold text-slate-900" id="current-tab-title">Ringkasan Merchant</h1>
                 <span class="badge-purple">Mode: Live Production</span>
+                <span id="merchant-badge-name" class="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                    <i class="fa-solid fa-store text-purple-700 mr-1"></i> {{ merchant.business_name if merchant else 'Aeternum Kreasikan Bersama' }}
+                </span>
             </div>
             <div class="flex items-center gap-3">
                 <button onclick="simulateIncomingMutation()" class="btn-secondary text-xs">
-                    <i class="fa-solid fa-flask text-purple-700"></i> Simulasi Mutasi Masuk
+                    <i class="fa-solid fa-flask text-purple-700"></i> Simulasi Mutasi
                 </button>
                 <button onclick="openCreateInvoiceModal()" class="btn-purple text-xs">
                     <i class="fa-solid fa-plus text-yellow-400"></i> Buat Tagihan QRIS
+                </button>
+                <button onclick="handleLogout()" title="Keluar" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition border border-slate-200 ml-1">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 </button>
             </div>
         </header>

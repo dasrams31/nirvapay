@@ -8,10 +8,27 @@ class Base(DeclarativeBase):
     pass
 
 
+class Merchant(Base):
+    __tablename__ = "merchants"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    email: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+    business_name: Mapped[str] = mapped_column(String(128))
+    owner_name: Mapped[str] = mapped_column(String(128), default="Merchant Owner")
+    phone_number: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    static_qris_payload: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    webhook_secret: Mapped[str] = mapped_column(String(64), default="nirva_sec_default")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class PaymentInvoice(Base):
     __tablename__ = "payment_invoices"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    merchant_id: Mapped[int] = mapped_column(Integer, default=1, index=True)
     invoice_id: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     merchant_ref: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
     amount: Mapped[float] = mapped_column(Float, default=0.0)
@@ -39,6 +56,7 @@ class Mutation(Base):
     __tablename__ = "mutations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    merchant_id: Mapped[int] = mapped_column(Integer, default=1, index=True)
     channel: Mapped[str] = mapped_column(String(32), default="GOPAY") # GOPAY, DANA, SHOPEEPAY, QRIS, BANK
     amount: Mapped[float] = mapped_column(Float, index=True)
     sender: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
@@ -53,7 +71,8 @@ class MerchantConnection(Base):
     __tablename__ = "merchant_connections"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    channel: Mapped[str] = mapped_column(String(32), unique=True) # gopay, dana, shopeepay, static_qris, bukaolshop
+    merchant_id: Mapped[int] = mapped_column(Integer, default=1, index=True)
+    channel: Mapped[str] = mapped_column(String(32)) # gopay, dana, shopeepay, static_qris, bukaolshop
     name: Mapped[str] = mapped_column(String(64))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     config_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -65,6 +84,7 @@ class ApiKey(Base):
     __tablename__ = "api_keys"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    merchant_id: Mapped[int] = mapped_column(Integer, default=1, index=True)
     name: Mapped[str] = mapped_column(String(64), default="Default Key")
     public_key: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     secret_key: Mapped[str] = mapped_column(String(64), unique=True, index=True)
@@ -78,6 +98,7 @@ class WebhookEndpoint(Base):
     __tablename__ = "webhook_endpoints"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    merchant_id: Mapped[int] = mapped_column(Integer, default=1, index=True)
     url: Mapped[str] = mapped_column(String(512))
     secret_key: Mapped[str] = mapped_column(String(64))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -90,6 +111,7 @@ class WebhookLog(Base):
     __tablename__ = "webhook_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    merchant_id: Mapped[int] = mapped_column(Integer, default=1, index=True)
     webhook_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     invoice_id: Mapped[str] = mapped_column(String(64), index=True)
     event: Mapped[str] = mapped_column(String(32))

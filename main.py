@@ -8,17 +8,19 @@ import random
 import re
 from typing import Optional
 
-from fastapi import FastAPI, Header, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
 from database import async_session, init_db
-from models import ApiKey, MerchantConnection, Mutation, PaymentInvoice, WebhookEndpoint, WebhookLog
+from models import ApiKey, Merchant, MerchantConnection, Mutation, PaymentInvoice, WebhookEndpoint, WebhookLog
+from auth import create_jwt_token, decode_jwt_token, hash_password, verify_password
 from qris_engine import generate_dynamic_qris, generate_qr_png_bytes
 
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +28,7 @@ logger = logging.getLogger("nirvapay")
 
 app = FastAPI(
     title="NirvaPay Gateway API",
-    description="Multi-Channel Merchant QRIS Payment Gateway & Aggregator SaaS",
+    description="Multi-Tenant Multi-Merchant QRIS Payment Gateway & Aggregator SaaS",
     version="1.0.0",
 )
 
@@ -39,18 +41,66 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount Static Files
 base_dir = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(base_dir, "static")), name="static")
-
-# Templates
 templates = Jinja2Templates(directory=os.path.join(base_dir, "templates"))
 
 
 @app.on_event("startup")
 async def on_startup():
     await init_db()
-    logger.info(f"NirvaPay Gateway server running on port {settings.PORT}")
+    logger.info(f"NirvaPay Multi-Tenant Gateway running on port {settings.PORT}")
+
+
+# ==============================================================================
+# AUTH DEPENDENCY & RESOLUTION
+# ==============================================================================
+async def get_current_merchant_optional(request: Request) -> Optional[Merchant]:
+    """Resolves merchant from cookie or Bearer JWT token."""
+    token = request.cookies.get("nirvapay_session")
+    auth_hdr = request.headers.get("Authorization")
+    
+    if not token and auth_hdr and auth_hdr.startswith("Bearer "):
+        token = auth_hdr.replace("Bearer ", "").strip()
+        
+    if not token:
+        return None
+        
+    payload = decode_jwt_token(token)
+    if not payload or "merchant_id" not in payload:
+        return None
+        
+    async with async_session() as session:
+        stmt = select(Merchant).where(Merchant.id == int(payload["merchant_id"]))
+        res = await session.execute(stmt)
+        return res.scalar_one_or_none()
+
+
+async def get_current_merchant_required(request: Request) -> Merchant:
+    merchant = await get_current_merchant_optional(request)
+    if not merchant:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    return merchant
+
+
+async def resolve_merchant_from_apikey(request: Request) -> Optional[Merchant]:
+    """Resolves merchant from ApiKey (Authorization: Bearer sec_live_... / pub_live_...)."""
+    auth_hdr = request.headers.get("Authorization")
+    if not auth_hdr:
+        return None
+        
+    token = auth_hdr.replace("Bearer ", "").strip()
+    async with async_session() as session:
+        stmt = select(ApiKey).where(
+            (ApiKey.secret_key == token) | (ApiKey.public_key == token)
+        ).where(ApiKey.is_active.is_(True))
+        res = await session.execute(stmt)
+        api_key = res.scalar_one_or_none()
+        if api_key:
+            stmt_m = select(Merchant).where(Merchant.id == api_key.merchant_id)
+            res_m = await session.execute(stmt_m)
+            return res_m.scalar_one_or_none()
+    return None
 
 
 # ==============================================================================
@@ -58,19 +108,46 @@ async def on_startup():
 # ==============================================================================
 @app.get("/", response_class=HTMLResponse)
 async def page_landing(request: Request):
-    """Halaman Landing Page Publik NirvaPay."""
+    """Landing Page Publik NirvaPay."""
     return templates.TemplateResponse(request=request, name="landing.html", context={"settings": settings})
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def page_login(request: Request):
+    merchant = await get_current_merchant_optional(request)
+    if merchant:
+        return RedirectResponse(url="/dashboard")
+    return templates.TemplateResponse(request=request, name="login.html", context={"settings": settings})
+
+
+@app.get("/register", response_class=HTMLResponse)
+async def page_register(request: Request):
+    merchant = await get_current_merchant_optional(request)
+    if merchant:
+        return RedirectResponse(url="/dashboard")
+    return templates.TemplateResponse(request=request, name="register.html", context={"settings": settings})
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def page_dashboard(request: Request):
-    """Console Dashboard Merchant (11 Modul)."""
-    return templates.TemplateResponse(request=request, name="dashboard.html", context={"settings": settings})
+    """Console Dashboard Merchant."""
+    merchant = await get_current_merchant_optional(request)
+    if not merchant:
+        # Fallback to master merchant if accessing local console
+        async with async_session() as session:
+            stmt = select(Merchant).where(Merchant.id == 1)
+            merchant = (await session.execute(stmt)).scalar_one_or_none()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html",
+        context={"merchant": merchant, "settings": settings},
+    )
 
 
 @app.get("/pay/{invoice_id}", response_class=HTMLResponse)
 async def page_checkout(request: Request, invoice_id: str):
-    """Halaman Checkout Pembayaran Pelanggan."""
+    """Halaman Checkout Pelanggan."""
     async with async_session() as session:
         stmt = select(PaymentInvoice).where(PaymentInvoice.invoice_id == invoice_id)
         res = await session.execute(stmt)
@@ -86,7 +163,6 @@ async def page_checkout(request: Request, invoice_id: str):
 
 @app.get("/api/v1/invoices/{invoice_id}/qr")
 async def get_invoice_qr(invoice_id: str):
-    """Menghasilkan gambar PNG QR Code untuk invoice terkait."""
     async with async_session() as session:
         stmt = select(PaymentInvoice).where(PaymentInvoice.invoice_id == invoice_id)
         res = await session.execute(stmt)
@@ -99,7 +175,6 @@ async def get_invoice_qr(invoice_id: str):
 
 @app.get("/api/v1/invoices/{invoice_id}/status")
 async def get_invoice_status(invoice_id: str):
-    """Polling status pembayaran invoice (PENDING/PAID)."""
     async with async_session() as session:
         stmt = select(PaymentInvoice).where(PaymentInvoice.invoice_id == invoice_id)
         res = await session.execute(stmt)
@@ -115,35 +190,162 @@ async def get_invoice_status(invoice_id: str):
 
 
 # ==============================================================================
-# 2. DASHBOARD JSON APIs
+# 2. AUTHENTICATION & MULTI-TENANT APIs
+# ==============================================================================
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class RegisterRequest(BaseModel):
+    business_name: str
+    owner_name: str = "Merchant Owner"
+    email: str
+    password: str
+    phone_number: Optional[str] = None
+    static_qris_payload: Optional[str] = None
+
+
+@app.post("/api/v1/auth/login")
+async def api_auth_login(req: LoginRequest, response: Response):
+    async with async_session() as session:
+        stmt = select(Merchant).where(Merchant.email == req.email.lower().strip())
+        res = await session.execute(stmt)
+        merchant = res.scalar_one_or_none()
+        
+        if not merchant or not verify_password(req.password, merchant.password_hash):
+            return JSONResponse(content={"success": False, "message": "Email atau password tidak sesuai"}, status_code=401)
+            
+        token = create_jwt_token({
+            "merchant_id": merchant.id,
+            "email": merchant.email,
+            "business_name": merchant.business_name,
+        })
+        
+        response.set_cookie(
+            key="nirvapay_session",
+            value=token,
+            httponly=True,
+            max_age=86400 * 7,
+            samesite="lax",
+        )
+        return {"success": True, "token": token, "business_name": merchant.business_name}
+
+
+@app.post("/api/v1/auth/register")
+async def api_auth_register(req: RegisterRequest, response: Response):
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Password minimal 6 karakter")
+
+    async with async_session() as session:
+        stmt_exist = select(Merchant).where(Merchant.email == req.email.lower().strip())
+        if (await session.execute(stmt_exist)).scalar_one_or_none():
+            return JSONResponse(content={"success": False, "message": "Email sudah terdaftar"}, status_code=400)
+
+        # Generate Unique Random API Keys
+        random_hex = random.randbytes(5).hex()
+        pub_key = f"pub_live_nirva_{random_hex}"
+        sec_key = f"sec_live_nirva_{random.randbytes(8).hex()}"
+
+        new_merchant = Merchant(
+            email=req.email.lower().strip(),
+            password_hash=hash_password(req.password),
+            business_name=req.business_name,
+            owner_name=req.owner_name,
+            phone_number=req.phone_number,
+            static_qris_payload=req.static_qris_payload or settings.DEFAULT_STATIC_QRIS,
+            webhook_secret=f"whsec_{random.randbytes(6).hex()}",
+            is_active=True,
+        )
+        session.add(new_merchant)
+        await session.commit()
+        await session.refresh(new_merchant)
+
+        # Seed ApiKey for this merchant
+        api_key = ApiKey(
+            merchant_id=new_merchant.id,
+            name="Default Production Key",
+            public_key=pub_key,
+            secret_key=sec_key,
+            is_sandbox=False,
+            is_active=True,
+        )
+        session.add(api_key)
+
+        # Seed Default Merchant Connections
+        channels = [
+            ("gopay", "GoPay Merchant (GoBiz)", True, "Active & Polling", {"mode": "notification"}),
+            ("dana", "DANA Forwarder Node", True, "Connected", {"auto_approve": True}),
+            ("static_qris", "National Dynamic QRIS Engine", True, "Active", {}),
+        ]
+        for code, name, is_act, status_txt, cfg in channels:
+            session.add(MerchantConnection(
+                merchant_id=new_merchant.id,
+                channel=code,
+                name=name,
+                is_active=is_act,
+                status_text=status_txt,
+                config_json=json.dumps(cfg),
+            ))
+
+        await session.commit()
+
+        token = create_jwt_token({
+            "merchant_id": new_merchant.id,
+            "email": new_merchant.email,
+            "business_name": new_merchant.business_name,
+        })
+        response.set_cookie(
+            key="nirvapay_session",
+            value=token,
+            httponly=True,
+            max_age=86400 * 7,
+            samesite="lax",
+        )
+        return {"success": True, "token": token, "business_name": new_merchant.business_name}
+
+
+@app.post("/api/v1/auth/logout")
+async def api_auth_logout(response: Response):
+    response.delete_cookie(key="nirvapay_session")
+    return {"success": True, "message": "Logged out"}
+
+
+# ==============================================================================
+# 3. DASHBOARD & DATA APIs (TENANT ISOLATED)
 # ==============================================================================
 @app.get("/api/v1/dashboard/summary")
-async def api_dashboard_summary():
-    """Metrik agregasi ringkasan omset dan performa transaksi."""
+async def api_dashboard_summary(request: Request):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
     async with async_session() as session:
         now = datetime.utcnow()
         start_of_today = datetime(now.year, now.month, now.day)
         start_of_month = datetime(now.year, now.month, 1)
 
-        # Omset Hari Ini
         stmt_today = select(func.sum(PaymentInvoice.total_amount)).where(
+            PaymentInvoice.merchant_id == merchant_id,
             PaymentInvoice.status == "PAID",
             PaymentInvoice.paid_at >= start_of_today,
         )
         omset_today = (await session.execute(stmt_today)).scalar() or 0.0
 
-        # Omset Bulan Ini
         stmt_month = select(func.sum(PaymentInvoice.total_amount)).where(
+            PaymentInvoice.merchant_id == merchant_id,
             PaymentInvoice.status == "PAID",
             PaymentInvoice.paid_at >= start_of_month,
         )
         omset_month = (await session.execute(stmt_month)).scalar() or 0.0
 
-        # Count Paid & Pending
-        stmt_paid_count = select(func.count(PaymentInvoice.id)).where(PaymentInvoice.status == "PAID")
+        stmt_paid_count = select(func.count(PaymentInvoice.id)).where(
+            PaymentInvoice.merchant_id == merchant_id,
+            PaymentInvoice.status == "PAID",
+        )
         total_paid_count = (await session.execute(stmt_paid_count)).scalar() or 0
 
         stmt_pending_count = select(func.count(PaymentInvoice.id)).where(
+            PaymentInvoice.merchant_id == merchant_id,
             PaymentInvoice.status == "PENDING",
             PaymentInvoice.expired_at > now,
         )
@@ -152,8 +354,9 @@ async def api_dashboard_summary():
         total_all = total_paid_count + pending_count
         success_rate = round((total_paid_count / total_all * 100), 1) if total_all > 0 else 100.0
 
-        # Recent Invoices
-        stmt_recent = select(PaymentInvoice).order_by(PaymentInvoice.created_at.desc()).limit(10)
+        stmt_recent = select(PaymentInvoice).where(
+            PaymentInvoice.merchant_id == merchant_id
+        ).order_by(PaymentInvoice.created_at.desc()).limit(10)
         recent_res = await session.execute(stmt_recent)
         recent_invoices = [
             {
@@ -191,9 +394,14 @@ class InvoiceCreateRequest(BaseModel):
 
 
 @app.get("/api/v1/invoices")
-async def api_get_invoices(limit: int = 50):
+async def api_get_invoices(request: Request, limit: int = 50):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
     async with async_session() as session:
-        stmt = select(PaymentInvoice).order_by(PaymentInvoice.created_at.desc()).limit(limit)
+        stmt = select(PaymentInvoice).where(
+            PaymentInvoice.merchant_id == merchant_id
+        ).order_by(PaymentInvoice.created_at.desc()).limit(limit)
         res = await session.execute(stmt)
         invoices = [
             {
@@ -214,21 +422,28 @@ async def api_get_invoices(limit: int = 50):
 
 
 @app.post("/api/v1/invoices")
-async def api_create_invoice(req: InvoiceCreateRequest):
-    """Membuat invoice pembayaran baru dengan QRIS Dinamis & Kode Unik Anti-Collision."""
+async def api_create_invoice(req: InvoiceCreateRequest, request: Request):
+    """
+    Membuat invoice pembayaran baru.
+    Mendukung autentikasi via ApiKey (Authorization: Bearer sec_live_...) maupun session merchant.
+    """
     if req.amount < 1000:
         raise HTTPException(status_code=400, detail="Minimal pembayaran Rp 1.000")
 
+    # Resolve merchant
+    merchant = await resolve_merchant_from_apikey(request) or await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+    static_qris = merchant.static_qris_payload if (merchant and merchant.static_qris_payload) else settings.DEFAULT_STATIC_QRIS
+
     async with async_session() as session:
-        # Ambil daftar nominal pending aktif untuk mencegah tabrakan kode unik
         stmt_pending = select(PaymentInvoice.total_amount).where(
+            PaymentInvoice.merchant_id == merchant_id,
             PaymentInvoice.status == "PENDING",
             PaymentInvoice.expired_at > datetime.utcnow(),
         )
         res_pending = await session.execute(stmt_pending)
         pending_amounts = set(res_pending.scalars().all())
 
-        # Generate unique code 1 - 499
         unique_code = random.randint(1, 499)
         total_amount = int(req.amount) + unique_code
         for _ in range(30):
@@ -241,10 +456,10 @@ async def api_create_invoice(req: InvoiceCreateRequest):
         invoice_id = f"INV-{timestamp}-{random.randint(1000, 9999)}"
         expired_at = datetime.utcnow() + timedelta(minutes=15)
 
-        # Generate Dynamic QRIS payload
-        dynamic_qris = generate_dynamic_qris(amount=total_amount)
+        dynamic_qris = generate_dynamic_qris(amount=total_amount, static_qris=static_qris)
 
         invoice = PaymentInvoice(
+            merchant_id=merchant_id,
             invoice_id=invoice_id,
             merchant_ref=req.merchant_ref,
             amount=req.amount,
@@ -281,9 +496,14 @@ async def api_create_invoice(req: InvoiceCreateRequest):
 
 
 @app.get("/api/v1/mutations")
-async def api_get_mutations(limit: int = 50):
+async def api_get_mutations(request: Request, limit: int = 50):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
     async with async_session() as session:
-        stmt = select(Mutation).order_by(Mutation.created_at.desc()).limit(limit)
+        stmt = select(Mutation).where(
+            Mutation.merchant_id == merchant_id
+        ).order_by(Mutation.created_at.desc()).limit(limit)
         res = await session.execute(stmt)
         mutations = [
             {
@@ -302,9 +522,14 @@ async def api_get_mutations(limit: int = 50):
 
 
 @app.get("/api/v1/connections")
-async def api_get_connections():
+async def api_get_connections(request: Request):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
     async with async_session() as session:
-        stmt = select(MerchantConnection).order_by(MerchantConnection.id.asc())
+        stmt = select(MerchantConnection).where(
+            MerchantConnection.merchant_id == merchant_id
+        ).order_by(MerchantConnection.id.asc())
         res = await session.execute(stmt)
         connections = [
             {
@@ -320,9 +545,14 @@ async def api_get_connections():
 
 
 @app.get("/api/v1/apikeys")
-async def api_get_apikeys():
+async def api_get_apikeys(request: Request):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
     async with async_session() as session:
-        stmt = select(ApiKey).order_by(ApiKey.id.asc())
+        stmt = select(ApiKey).where(
+            ApiKey.merchant_id == merchant_id
+        ).order_by(ApiKey.id.asc())
         res = await session.execute(stmt)
         keys = [
             {
@@ -339,9 +569,14 @@ async def api_get_apikeys():
 
 
 @app.get("/api/v1/webhooks")
-async def api_get_webhooks():
+async def api_get_webhooks(request: Request):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
     async with async_session() as session:
-        stmt = select(WebhookEndpoint).order_by(WebhookEndpoint.id.asc())
+        stmt = select(WebhookEndpoint).where(
+            WebhookEndpoint.merchant_id == merchant_id
+        ).order_by(WebhookEndpoint.id.asc())
         res = await session.execute(stmt)
         hooks = [
             {
@@ -356,10 +591,14 @@ async def api_get_webhooks():
 
 
 @app.get("/api/v1/export/csv")
-async def export_transactions_csv():
-    """Export seluruh data transaksi lunas ke file CSV."""
+async def export_transactions_csv(request: Request):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
     async with async_session() as session:
-        stmt = select(PaymentInvoice).order_by(PaymentInvoice.created_at.desc())
+        stmt = select(PaymentInvoice).where(
+            PaymentInvoice.merchant_id == merchant_id
+        ).order_by(PaymentInvoice.created_at.desc())
         res = await session.execute(stmt)
         records = res.scalars().all()
 
@@ -403,32 +642,35 @@ async def export_transactions_csv():
 
 
 # ==============================================================================
-# 3. WEBHOOK RECEIVERS (GOPAY, DANA, BUKAOLSHOP)
+# 4. MUTATION WEBHOOK RECEIVERS
 # ==============================================================================
+@app.get("/webhook/gopay")
 @app.post("/webhook/gopay")
+@app.get("/api/webhook/gopay-mutation")
 @app.post("/api/webhook/gopay-mutation")
+@app.get("/webhook/dana")
 @app.post("/webhook/dana")
 async def handle_merchant_mutation_webhook(
     request: Request,
     x_secret_key: Optional[str] = Header(None, alias="X-Secret-Key"),
 ):
-    """
-    Menerima webhook mutasi masuk dari GoPay / DANA / MacroDroid.
-    Melakukan pencocokan otomatis ke invoice PENDING berdasarkan nominal persis.
-    """
-    raw_body = await request.body()
-    body_str = raw_body.decode("utf-8", errors="ignore")
-
+    body_str = ""
     data = {}
-    try:
-        data = json.loads(body_str)
-    except Exception:
-        pass
+
+    if request.method == "POST":
+        raw_body = await request.body()
+        body_str = raw_body.decode("utf-8", errors="ignore")
+        try:
+            data = json.loads(body_str)
+        except Exception:
+            pass
+    else:
+        data = dict(request.query_params)
+        body_str = json.dumps(data)
 
     extracted_amount: Optional[int] = None
     channel = "GOPAY" if "gopay" in request.url.path else "DANA"
 
-    # 1. Coba ambil dari field amount
     if isinstance(data, dict) and data.get("amount") is not None:
         try:
             amt_val = str(data.get("amount")).replace(".", "").replace(",", "").replace("Rp", "").strip()
@@ -436,9 +678,13 @@ async def handle_merchant_mutation_webhook(
         except (ValueError, TypeError):
             pass
 
-    # 2. Coba parse regex dari teks notifikasi
     if extracted_amount is None:
-        text_search = f"{data.get('title', '')} {data.get('text', '')} {data.get('message', '')}" if isinstance(data, dict) else body_str
+        text_search = ""
+        if isinstance(data, dict):
+            text_search = f"{data.get('title', '')} {data.get('text', '')} {data.get('content', '')} {data.get('message', '')} {data.get('subText', '')} {data.get('body', '')}"
+        else:
+            text_search = body_str
+
         matches = re.findall(r"(?:Rp\.?\s*|sebesar\s*Rp\.?\s*|IDR\s*)([\d\.,]+)", text_search, re.IGNORECASE)
         if matches:
             clean = matches[0].replace(".", "").replace(",", "")
@@ -451,17 +697,7 @@ async def handle_merchant_mutation_webhook(
         return JSONResponse(content={"success": False, "message": "Nominal tidak terdeteksi"}, status_code=400)
 
     async with async_session() as session:
-        # Rekam Log Mutasi
-        mutation = Mutation(
-            channel=channel,
-            amount=float(extracted_amount),
-            raw_text=body_str[:500],
-            is_matched=False,
-            created_at=datetime.utcnow(),
-        )
-        session.add(mutation)
-
-        # Cari Invoice Pending yang cocok
+        # Cari Invoice Pending yang cocok di semua merchant
         now = datetime.utcnow()
         stmt_inv = (
             select(PaymentInvoice)
@@ -474,11 +710,22 @@ async def handle_merchant_mutation_webhook(
         res_inv = await session.execute(stmt_inv)
         matched_invoice = res_inv.scalar_one_or_none()
 
+        target_merchant_id = matched_invoice.merchant_id if matched_invoice else 1
+
+        mutation = Mutation(
+            merchant_id=target_merchant_id,
+            channel=channel,
+            amount=float(extracted_amount),
+            raw_text=body_str[:500],
+            is_matched=bool(matched_invoice),
+            matched_invoice_id=matched_invoice.invoice_id if matched_invoice else None,
+            created_at=datetime.utcnow(),
+        )
+        session.add(mutation)
+
         if matched_invoice:
             matched_invoice.status = "PAID"
             matched_invoice.paid_at = datetime.utcnow()
-            mutation.is_matched = True
-            mutation.matched_invoice_id = matched_invoice.invoice_id
             await session.commit()
 
             logger.info(f"🎉 [NIRVAPAY] Mutasi Rp {extracted_amount:,.0f} LUNAS untuk Invoice {matched_invoice.invoice_id}")
@@ -500,7 +747,6 @@ async def handle_merchant_mutation_webhook(
 
 @app.post("/api/v1/bukaolshop/callback")
 async def bukaolshop_ipn_callback(request: Request):
-    """Callback IPN khusus BukaOlshop."""
     body = await request.body()
     logger.info(f"BukaOlshop IPN Received: {body.decode('utf-8', errors='ignore')}")
     return {"status": "success", "message": "BukaOlshop IPN processed"}
