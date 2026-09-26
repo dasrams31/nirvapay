@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NirvaPay Console — Merchant Payment Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-900 flex min-h-screen">
+
+    <!-- Sidebar Navigation (11 Modul Lengkap) -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 select-none">
+        <div class="p-5">
+            <!-- Brand -->
+            <a href="/" class="flex items-center gap-3 mb-8">
+                <div class="w-8 h-8 rounded-lg bg-purple-900 flex items-center justify-center text-yellow-400 font-black text-base border border-purple-950">
+                    N
+                </div>
+                <div>
+                    <span class="text-lg font-black text-slate-950">Nirva<span class="text-purple-800">Pay</span></span>
+                    <span class="badge-gold ml-1 text-[9px]">MERCHANT</span>
+                </div>
+            </a>
+
+            <!-- Navigation Sections -->
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-3">MENU UTAMA</div>
+            <nav class="space-y-1">
+                <a href="#" class="nav-tab-item active" data-tab="ringkasan">
+                    <i class="fa-solid fa-chart-pie w-4 text-purple-700"></i> Ringkasan
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="pembayaran">
+                    <i class="fa-solid fa-receipt w-4 text-purple-700"></i> Pembayaran
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="mutasi">
+                    <i class="fa-solid fa-money-bill-transfer w-4 text-purple-700"></i> Mutasi
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="rekap">
+                    <i class="fa-solid fa-file-excel w-4 text-purple-700"></i> File Rekap
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="koneksi">
+                    <i class="fa-solid fa-network-wired w-4 text-purple-700"></i> Koneksi Merchant
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="bukaolshop">
+                    <i class="fa-solid fa-cart-shopping w-4 text-purple-700"></i> Integrasi BukaOlshop
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="dana">
+                    <i class="fa-solid fa-mobile-screen w-4 text-purple-700"></i> DANA Forwarder
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="telegram">
+                    <i class="fa-brands fa-telegram w-4 text-purple-700"></i> Bot Telegram
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="apikeys">
+                    <i class="fa-solid fa-key w-4 text-purple-700"></i> API Keys
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="webhooks">
+                    <i class="fa-solid fa-webhook w-4 text-purple-700"></i> Webhooks
+                </a>
+                <a href="#" class="nav-tab-item" data-tab="dokumentasi">
+                    <i class="fa-solid fa-book-bookmark w-4 text-purple-700"></i> Dokumentasi
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-slate-200">
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-800">Node Server</span>
+                    <span class="badge-success text-[10px]"><i class="fa-solid fa-circle text-[8px]"></i> Online</span>
+                </div>
+                <div class="mono text-[11px] text-slate-500 mt-1">Port: :8098 (FastAPI)</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow flex flex-col h-screen overflow-y-auto">
+        <!-- Top Workspace Bar -->
+        <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0 sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <h1 class="text-base font-bold text-slate-900" id="current-tab-title">Ringkasan Merchant</h1>
+                <span class="badge-purple">Mode: Live Production</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="simulateIncomingMutation()" class="btn-secondary text-xs">
+                    <i class="fa-solid fa-flask text-purple-700"></i> Simulasi Mutasi Masuk
+                </button>
+                <button onclick="openCreateInvoiceModal()" class="btn-purple text-xs">
+                    <i class="fa-solid fa-plus text-yellow-400"></i> Buat Tagihan QRIS
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Sections -->
+        <div class="p-8 max-w-7xl mx-auto w-full space-y-6">
+
+            <!-- 1. TAB RINGKASAN -->
+            <section id="section-ringkasan" class="tab-section space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="card-solid p-5">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Omset Hari Ini</div>
+                        <div class="text-2xl font-black mono text-purple-950 mt-1" id="metric-omset-today">Rp 0</div>
+                        <div class="text-xs text-emerald-700 font-semibold mt-1"><i class="fa-solid fa-arrow-trend-up"></i> Terkonfirmasi Realtime</div>
+                    </div>
+                    <div class="card-solid p-5">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Omset Bulan Ini</div>
+                        <div class="text-2xl font-black mono text-purple-950 mt-1" id="metric-omset-month">Rp 0</div>
+                        <div class="text-xs text-slate-500 mt-1">Total akumulasi mutasi</div>
+                    </div>
+                    <div class="card-solid p-5">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Transaksi Sukses</div>
+                        <div class="text-2xl font-black mono text-slate-900 mt-1" id="metric-total-paid">0</div>
+                        <div class="text-xs text-slate-500 mt-1">Status Lunas (PAID)</div>
+                    </div>
+                    <div class="card-solid p-5">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Invoice Pending</div>
+                        <div class="text-2xl font-black mono text-amber-600 mt-1" id="metric-pending-count">0</div>
+                        <div class="text-xs text-slate-500 mt-1">Menunggu pembayaran</div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Card -->
+                <div class="card-solid overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-slate-900">Aktivitas Transaksi Terkini</h2>
+                        <button onclick="fetchSummaryMetrics()" class="text-xs font-semibold text-purple-700 hover:text-purple-900"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="nirva-table">
+                            <thead>
+                                <tr>
+                                    <th>No. Invoice</th>
+                                    <th>Nama Pelanggan</th>
+                                    <th>Total Tagihan</th>
+                                    <th>Status</th>
+                                    <th>Metode</th>
+                                    <th>Waktu</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-invoices-tbody">
+                                <tr><td colspan="6" class="text-center py-6 text-slate-400">Memuat data aktivitas...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. TAB PEMBAYARAN -->
+            <section id="section-pembayaran" class="tab-section hidden space-y-6">
+                <div class="card-solid overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-900">Daftar Tagihan & Invoice</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Semua invoice pembayaran QRIS dan dynamic link yang dibuat</p>
+                        </div>
+                        <button onclick="openCreateInvoiceModal()" class="btn-purple text-xs">
+                            <i class="fa-solid fa-plus text-yellow-400"></i> Buat Tagihan Baru
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="nirva-table">
+                            <thead>
+                                <tr>
+                                    <th>No. Invoice</th>
+                                    <th>Pelanggan</th>
+                                    <th>Total Bayar</th>
+                                    <th>Status</th>
+                                    <th>Metode</th>
+                                    <th>Dibuat</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoices-tbody">
+                                <tr><td colspan="7" class="text-center py-8 text-slate-400">Memuat data invoice...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. TAB MUTASI -->
+            <section id="section-mutasi" class="tab-section hidden space-y-6">
+                <div class="card-solid overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-900">Riwayat Mutasi Saldo Masuk</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Log notifikasi mutasi dari GoPay, DANA, dan perbankan yang ditangkap gateway</p>
+                        </div>
+                        <button onclick="fetchMutations()" class="text-xs font-semibold text-purple-700 hover:text-purple-900"><i class="fa-solid fa-rotate-right"></i> Refresh Mutasi</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="nirva-table">
+                            <thead>
+                                <tr>
+                                    <th>Channel</th>
+                                    <th>Nominal Masuk</th>
+                                    <th>Raw Payload / Keterangan</th>
+                                    <th>Pencocokan Invoice</th>
+                                    <th>Waktu Masuk</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mutations-tbody">
+                                <tr><td colspan="6" class="text-center py-8 text-slate-400">Memuat log mutasi...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. TAB FILE REKAP -->
+            <section id="section-rekap" class="tab-section hidden space-y-6">
+                <div class="card-solid p-6">
+                    <h2 class="text-base font-bold text-slate-900 mb-2">Export Laporan & File Rekap Transaksi</h2>
+                    <p class="text-xs text-slate-500 mb-6">Unduh data mutasi dan transaksi pembayaran dalam format spreadsheet CSV atau Microsoft Excel (.xlsx)</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Status</label>
+                            <select class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white">
+                                <option value="PAID">Hanya Transaksi Lunas (PAID)</option>
+                                <option value="ALL">Semua Transaksi Termasuk Pending</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Format File</label>
+                            <select class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white">
+                                <option value="csv">Comma-Separated Values (.CSV)</option>
+                                <option value="xlsx">Microsoft Excel (.XLSX)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <a href="/api/v1/export/csv" class="btn-purple text-xs">
+                            <i class="fa-solid fa-download text-yellow-400"></i> Unduh File Rekap (.CSV)
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. TAB KONEKSI MERCHANT -->
+            <section id="section-koneksi" class="tab-section hidden space-y-6">
+                <div class="card-solid p-6 mb-6">
+                    <h2 class="text-base font-bold text-slate-900 mb-1">Pengaturan Koneksi Node Merchant</h2>
+                    <p class="text-xs text-slate-500">Kelola akun merchant penyedia QRIS, GoPay Merchant, dan e-wallet yang aktif</p>
+                </div>
+                <div id="connections-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- 6. TAB INTEGRASI BUKAOLSHOP -->
+            <section id="section-bukaolshop" class="tab-section hidden space-y-6">
+                <div class="card-solid p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">Integrasi Pembayaran BukaOlshop</h2>
+                            <p class="text-xs text-slate-500">Gunakan NirvaPay sebagai callback gateway pembayaran otomatis di aplikasi toko online BukaOlshop Anda</p>
+                        </div>
+                        <span class="badge-gold">BukaOlshop Ready</span>
+                    </div>
+
+                    <div class="space-y-4 max-w-2xl text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">URL Callback IPN BukaOlshop:</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" readonly value="http://127.0.0.1:8098/api/v1/bukaolshop/callback" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 mono text-purple-950 font-bold">
+                                <button onclick="copyToClipboard('http://127.0.0.1:8098/api/v1/bukaolshop/callback')" class="btn-secondary px-3 py-2 text-xs">Salin</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Secret Auth Token:</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" readonly value="bukaolshop_auth_2026" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 mono font-semibold">
+                                <button onclick="copyToClipboard('bukaolshop_auth_2026')" class="btn-secondary px-3 py-2 text-xs">Salin</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. TAB DANA FORWARDER -->
+            <section id="section-dana" class="tab-section hidden space-y-6">
+                <div class="card-solid p-6">
+                    <h2 class="text-base font-bold text-slate-900 mb-1">Hub Webhook DANA & Android Forwarder</h2>
+                    <p class="text-xs text-slate-500 mb-6">Forward notifikasi penerimaan saldo DANA dari smartphone Android Anda ke server secara otomatis</p>
+
+                    <div class="p-4 bg-purple-50 border border-purple-200 rounded-xl mb-6 text-xs text-purple-950 space-y-2">
+                        <div class="font-bold flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Petunjuk Setup MacroDroid / Notification Listener:</div>
+                        <p>1. Target URL: <code class="mono font-bold">http://&lt;IP_VPS&gt;:8098/webhook/dana</code></p>
+                        <p>2. HTTP Method: <code class="mono font-bold">POST</code></p>
+                        <p>3. Header: <code class="mono font-bold">X-Secret-Key: nirva_dana_2026</code></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 8. TAB BOT TELEGRAM -->
+            <section id="section-telegram" class="tab-section hidden space-y-6">
+                <div class="card-solid p-6">
+                    <h2 class="text-base font-bold text-slate-900 mb-1">Notifikasi Instan Telegram Bot</h2>
+                    <p class="text-xs text-slate-500 mb-6">Kirimkan rincian transaksi sukses dan omset masuk langsung ke akun Telegram pribadi Anda</p>
+
+                    <div class="space-y-4 max-w-lg text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Telegram Admin ID (Owner):</label>
+                            <input type="text" value="606533609" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 mono font-bold">
+                        </div>
+                        <button onclick="showToast('Notifikasi tes berhasil dikirim ke Telegram')" class="btn-purple text-xs">
+                            <i class="fa-brands fa-telegram text-yellow-400"></i> Kirim Tes Pesan ke Telegram
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 9. TAB API KEYS -->
+            <section id="section-apikeys" class="tab-section hidden space-y-6">
+                <div class="card-solid overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-900">Developer API Keys</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Kredensial untuk menghubungkan website, backend, atau bot jualan ke gateway NirvaPay</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="nirva-table">
+                            <thead>
+                                <tr>
+                                    <th>Nama Kunci</th>
+                                    <th>Lingkungan</th>
+                                    <th>Public Key</th>
+                                    <th>Secret Key</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="apikeys-tbody">
+                                <tr><td colspan="5" class="text-center py-6 text-slate-400">Memuat API Keys...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 10. TAB WEBHOOKS -->
+            <section id="section-webhooks" class="tab-section hidden space-y-6">
+                <div class="card-solid overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 flex items-center justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-900">Client Webhook Subscriptions</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Kirimkan callback status pembayaran lunas ke backend aplikasi Anda</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="nirva-table">
+                            <thead>
+                                <tr>
+                                    <th>Target URL Endpoint</th>
+                                    <th>Secret Key</th>
+                                    <th>Event Triggers</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="webhooks-tbody">
+                                <tr><td colspan="5" class="text-center py-6 text-slate-400">Memuat data webhooks...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 11. TAB DOKUMENTASI -->
+            <section id="section-dokumentasi" class="tab-section hidden space-y-6">
+                <div class="card-solid p-6">
+                    <h2 class="text-base font-bold text-slate-900 mb-2">Panduan Integrasi REST API NirvaPay</h2>
+                    <p class="text-xs text-slate-500 mb-6">Contoh implementasi pembuatan tagihan QRIS dinamis di berbagai bahasa pemrograman</p>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs overflow-x-auto border border-slate-800">
+<span class="text-purple-400"># Contoh Pembuatan Invoice via cURL</span>
+curl -X POST https://nirvapay.dasrams.biz.id/api/v1/invoices \
+  -H <span class="text-yellow-400">"Authorization: Bearer sec_live_nirva_e3b829c7140f912b"</span> \
+  -H <span class="text-yellow-400">"Content-Type: application/json"</span> \
+  -d '{
+    <span class="text-cyan-400">"amount"</span>: 25000,
+    <span class="text-cyan-400">"customer_name"</span>: "Budi Santoso",
+    <span class="text-cyan-400">"description"</span>: "Topup Saldo VIP",
+    <span class="text-cyan-400">"callback_url"</span>: "https://tokoanda.com/webhook/payment"
+  }'
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modal Create Invoice -->
+    <div id="modal-create-invoice" class="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center hidden p-4">
+        <div class="card-solid w-full max-w-md p-6 bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                <h3 class="text-sm font-bold text-slate-900">Buat Tagihan QRIS Baru</h3>
+                <button onclick="closeCreateInvoiceModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-base"></i></button>
+            </div>
+            <form onsubmit="submitCreateInvoice(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nominal Tagihan (Rp):</label>
+                    <input type="number" id="inp-amount" required min="1000" placeholder="Contoh: 25000" class="w-full px-3 py-2 border border-slate-300 rounded-lg mono text-sm font-bold text-slate-900 focus:outline-none focus:border-purple-700">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nama Pelanggan:</label>
+                    <input type="text" id="inp-customer-name" required placeholder="Contoh: Budi Santoso" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nomor WhatsApp / HP (Opsional):</label>
+                    <input type="tel" id="inp-customer-phone" placeholder="081234567890" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Keterangan / Catatan:</label>
+                    <input type="text" id="inp-description" placeholder="Contoh: Order #1088 Spotify Premium" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700">
+                </div>
+                <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeCreateInvoiceModal()" class="btn-secondary">Batal</button>
+                    <button type="submit" id="btn-submit-invoice" class="btn-purple">Buat Tagihan QRIS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

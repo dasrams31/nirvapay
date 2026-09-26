@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NirvaPay — Self-Hosted Merchant QRIS & Multi-Channel Payment Gateway</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-900 flex flex-col min-height-screen">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="/" class="flex items-center gap-3 text-decoration-none">
+                    <div class="w-9 h-9 rounded-lg bg-purple-900 flex items-center justify-center text-yellow-400 font-black text-lg border border-purple-950 shadow-sm">
+                        N
+                    </div>
+                    <div>
+                        <span class="text-xl font-black tracking-tight text-slate-950">Nirva<span class="text-purple-800">Pay</span></span>
+                        <span class="badge-gold ml-1.5 text-[10px]">GATEWAY</span>
+                    </div>
+                </a>
+
+                <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
+                    <a href="#fitur" class="hover:text-purple-800 transition">Fitur Utama</a>
+                    <a href="#arsitektur" class="hover:text-purple-800 transition">Arsitektur</a>
+                    <a href="#integrasi" class="hover:text-purple-800 transition">Integrasi</a>
+                    <a href="#sdk" class="hover:text-purple-800 transition">Developer API</a>
+                </nav>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="/dashboard" class="btn-purple">
+                    <i class="fa-solid fa-gauge-high text-yellow-400"></i> Buka Console Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="flex-grow">
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-900 text-xs font-bold mb-6">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                SaaS Payment Gateway Mandiri — 0% Potongan Pihak Ketiga
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl font-extrabold text-slate-950 tracking-tight max-w-4xl mx-auto leading-tight mb-6">
+                Gerbang Pembayaran <span class="text-purple-800">QRIS Merchant & Aggregator</span> Multi-Channel Mandiri.
+            </h1>
+
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+                Hubungkan GoPay Merchant, DANA Forwarder, BukaOlshop, dan Bot Telegram ke dalam satu infrastruktur pembayaran otomatis berkecepatan tinggi tanpa perantara.
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center gap-4 mb-16">
+                <a href="/dashboard" class="btn-purple px-8 py-3 text-base shadow-md">
+                    <i class="fa-solid fa-rocket text-yellow-400"></i> Masuk ke Dashboard Merchant
+                </a>
+                <a href="/dashboard" onclick="setTimeout(()=>switchTab('dokumentasi'), 100)" class="btn-secondary px-6 py-3 text-base">
+                    <i class="fa-solid fa-code text-purple-800"></i> Baca Dokumentasi API
+                </a>
+            </div>
+
+            <!-- Dashboard Preview Solid Card -->
+            <div class="card-solid p-4 sm:p-6 max-w-5xl mx-auto text-left shadow-lg bg-white border border-slate-200">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="flex gap-1.5">
+                            <span class="w-3 h-3 rounded-full bg-slate-200"></span>
+                            <span class="w-3 h-3 rounded-full bg-slate-200"></span>
+                            <span class="w-3 h-3 rounded-full bg-slate-200"></span>
+                        </div>
+                        <span class="mono text-xs text-slate-400 font-semibold">nirvapay.dasrams.biz.id/dashboard</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="badge-success text-xs"><i class="fa-solid fa-bolt"></i> Realtime Mutasi Active</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="text-xs font-semibold text-slate-500 uppercase">Omset Transaksi Hari Ini</div>
+                        <div class="text-2xl font-bold mono text-purple-900 mt-1">Rp 1.485.230</div>
+                        <div class="text-xs text-emerald-600 font-semibold mt-1"><i class="fa-solid fa-arrow-trend-up"></i> 100% Lunas Otomatis</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="text-xs font-semibold text-slate-500 uppercase">Success Conversion Rate</div>
+                        <div class="text-2xl font-bold mono text-slate-900 mt-1">98.4%</div>
+                        <div class="text-xs text-slate-500 mt-1">Rata-rata rilis: 1.8 detik</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <div class="text-xs font-semibold text-slate-500 uppercase">Node Merchant Terhubung</div>
+                        <div class="text-2xl font-bold mono text-slate-900 mt-1">4 Node Aktif</div>
+                        <div class="text-xs text-purple-700 font-semibold mt-1">GoPay • DANA • BukaOlshop</div>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 overflow-hidden">
+                    <table class="nirva-table">
+                        <thead>
+                            <tr>
+                                <th>No. Invoice</th>
+                                <th>Pelanggan</th>
+                                <th>Nominal</th>
+                                <th>Metode</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="mono font-semibold">INV-20260927-8411</td>
+                                <td>Budi Santoso</td>
+                                <td class="mono font-bold text-purple-900">Rp 25.143</td>
+                                <td><span class="badge-purple">GoPay QRIS</span></td>
+                                <td><span class="badge-success">PAID</span></td>
+                            </tr>
+                            <tr>
+                                <td class="mono font-semibold">INV-20260927-8412</td>
+                                <td>Ahmad Rizky</td>
+                                <td class="mono font-bold text-purple-900">Rp 50.329</td>
+                                <td><span class="badge-purple">DANA Forwarder</span></td>
+                                <td><span class="badge-success">PAID</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Grid (11 Modules Highlights) -->
+        <section id="fitur" class="py-16 bg-white border-t border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <h2 class="text-xs font-bold text-purple-800 tracking-wider uppercase mb-2">Modul Lengkap Sistem</h2>
+                    <p class="text-3xl font-extrabold text-slate-950 tracking-tight">11 Fitur Inti Pembayaran Tanpa Kompromi</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card-solid p-6">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-lg mb-4">
+                            <i class="fa-solid fa-qrcode text-yellow-500"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2">Dynamic EMVCo QRIS</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                            Injeksi nominal otomatis tag 54 dan perhitungan CRC16-CCITT pada QRIS statis merchant GoPay & perbankan nasional.
+                        </p>
+                    </div>
+
+                    <div class="card-solid p-6">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-lg mb-4">
+                            <i class="fa-solid fa-mobile-screen text-yellow-500"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2">DANA & GoPay Forwarder</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                            Menerima webhook notifikasi real-time dari MacroDroid / Notification Listener Android dengan verifikasi secret key.
+                        </p>
+                    </div>
+
+                    <div class="card-solid p-6">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-lg mb-4">
+                            <i class="fa-solid fa-cart-shopping text-yellow-500"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2">Integrasi BukaOlshop</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                            Endpoint IPN callback khusus untuk validasi dan auto-approval pesanan toko online berbasis BukaOlshop.
+                        </p>
+                    </div>
+
+                    <div class="card-solid p-6">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-lg mb-4">
+                            <i class="fa-brands fa-telegram text-yellow-500"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2">Bot Telegram Notification</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                            Broadcast otomatis setiap ada dana masuk langsung ke akun Telegram admin secara instan dengan rincian invoice.
+                        </p>
+                    </div>
+
+                    <div class="card-solid p-6">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-lg mb-4">
+                            <i class="fa-solid fa-key text-yellow-500"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2">API Keys & Whitelist</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                            Dukungan multi API Key (Production & Sandbox), rate limiting sliding window, serta pembatasan IP address.
+                        </p>
+                    </div>
+
+                    <div class="card-solid p-6">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-lg mb-4">
+                            <i class="fa-solid fa-file-excel text-yellow-500"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2">Rekap CSV & Excel</h3>
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                            Export data transaksi dan mutasi harian / bulanan ke dalam format spreadsheet CSV atau XLSX dalam 1 klik.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded bg-purple-900 text-yellow-400 flex items-center justify-center font-bold text-xs">N</div>
+                <span class="text-sm font-bold text-slate-800">NirvaPay Ecosystem</span>
+                <span class="text-xs text-slate-400">© 2026 PT Aeternum Kreasikan Bersama. All rights reserved.</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-semibold text-slate-500">
+                <a href="/dashboard" class="hover:text-purple-800">Console</a>
+                <a href="/docs" class="hover:text-purple-800">Swagger API</a>
+                <a href="/health" class="hover:text-purple-800">Status Server</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
