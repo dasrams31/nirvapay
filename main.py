@@ -6,14 +6,16 @@ import logging
 import os
 import random
 import re
+import asyncio
 from typing import Optional
+import httpx
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,6 +24,8 @@ from database import async_session, init_db
 from models import ApiKey, Merchant, MerchantConnection, Mutation, PaymentInvoice, WebhookEndpoint, WebhookLog
 from auth import create_jwt_token, decode_jwt_token, hash_password, verify_password
 from qris_engine import generate_dynamic_qris, generate_qr_png_bytes
+from telegram_notifier import format_payment_paid_alert, send_telegram_alert
+from bukaolshop_engine import trigger_bukaolshop_confirm_callback
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("nirvapay")
@@ -727,6 +731,10 @@ async def handle_merchant_mutation_webhook(
             matched_invoice.status = "PAID"
             matched_invoice.paid_at = datetime.utcnow()
             await session.commit()
+            await session.refresh(matched_invoice)
+
+            # Auto-Dispatch Settlement Events (Telegram, Client Webhook, BukaOlshop IPN)
+            asyncio.create_task(dispatch_payment_settlement_events(matched_invoice))
 
             logger.info(f"🎉 [NIRVAPAY] Mutasi Rp {extracted_amount:,.0f} LUNAS untuk Invoice {matched_invoice.invoice_id}")
             return {
@@ -743,6 +751,79 @@ async def handle_merchant_mutation_webhook(
             "amount": extracted_amount,
             "message": "Mutasi dicatat (belum ada invoice pending yang cocok)",
         }
+
+
+async def dispatch_payment_settlement_events(invoice: PaymentInvoice) -> None:
+    """Dispatches Telegram notifications, client webhook callbacks, and BukaOlshop auto-approval."""
+    try:
+        async with async_session() as session:
+            stmt_m = select(Merchant).where(Merchant.id == invoice.merchant_id)
+            merchant = (await session.execute(stmt_m)).scalar_one_or_none()
+
+            # 1. Telegram Alert
+            alert_text = format_payment_paid_alert(
+                {
+                    "invoice_id": invoice.invoice_id,
+                    "customer_name": invoice.customer_name,
+                    "amount": invoice.amount,
+                    "unique_code": invoice.unique_code,
+                    "total_amount": invoice.total_amount,
+                    "payment_channel": invoice.payment_channel,
+                    "description": invoice.description,
+                },
+                {"business_name": merchant.business_name if merchant else None},
+            )
+            await send_telegram_alert(
+                bot_token=settings.TELEGRAM_BOT_TOKEN,
+                chat_id=settings.TELEGRAM_ADMIN_CHAT_ID,
+                message=alert_text,
+            )
+
+            # 2. Direct Invoice Callback URL
+            if invoice.callback_url:
+                try:
+                    async with httpx.AsyncClient(timeout=10.0) as client:
+                        await client.post(
+                            invoice.callback_url,
+                            json={
+                                "event": "payment.paid",
+                                "invoice_id": invoice.invoice_id,
+                                "merchant_ref": invoice.merchant_ref,
+                                "total_amount": invoice.total_amount,
+                                "status": "PAID",
+                                "paid_at": invoice.paid_at.isoformat() if invoice.paid_at else datetime.utcnow().isoformat(),
+                            },
+                        )
+                except Exception as e:
+                    logger.warning(f"Error calling callback_url {invoice.callback_url}: {e}")
+
+            # 3. BukaOlshop Callback Trigger
+            if invoice.merchant_ref and invoice.callback_url and "bukaolshop" in invoice.callback_url.lower():
+                await trigger_bukaolshop_confirm_callback(
+                    callback_url=invoice.callback_url,
+                    invoice_id=invoice.invoice_id,
+                    merchant_ref=invoice.merchant_ref,
+                    amount=invoice.total_amount,
+                )
+
+    except Exception as e:
+        logger.error(f"Error in dispatch_payment_settlement_events: {e}")
+
+
+@app.post("/api/v1/telegram/test")
+async def api_test_telegram(request: Request):
+    """Mengirim pesan uji coba ke Telegram admin."""
+    body = await request.json()
+    chat_id = str(body.get("chat_id") or settings.TELEGRAM_ADMIN_CHAT_ID)
+    test_msg = (
+        "🚀 <b>NIRVAPAY TELEGRAM ALERT TEST</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n"
+        "Koneksi notifikasi Telegram bot NirvaPay berhasil aktif dan siap menerima alert transaksi real-time!\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n"
+        "⚡ <i>NirvaPay SaaS Gateway</i>"
+    )
+    ok = await send_telegram_alert(bot_token=settings.TELEGRAM_BOT_TOKEN, chat_id=chat_id, message=test_msg)
+    return {"success": ok, "message": "Pesan terkirim ke Telegram" if ok else "Gagal (pastikan bot token & chat id valid)"}
 
 
 @app.post("/api/v1/bukaolshop/callback")

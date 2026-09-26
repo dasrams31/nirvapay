@@ -355,6 +355,22 @@ async function handleLogout() {
     }
 }
 
+// Test Telegram Alert
+async function testTelegramAlert() {
+    const chatId = document.getElementById('inp-telegram-chatid')?.value || '606533609';
+    try {
+        const res = await fetch('/api/v1/telegram/test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId }),
+        });
+        const data = await res.json();
+        showToast(data.message || 'Notifikasi dikirim ke Telegram');
+    } catch (e) {
+        showToast('Gagal mengirim tes Telegram');
+    }
+}
+
 // Simulator Test Mutation
 async function simulateIncomingMutation() {
     const amount = prompt("Masukkan nominal mutasi untuk simulasi (Contoh: 15234):", "15000");

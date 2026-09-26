@@ -48,7 +48,7 @@ async def init_db() -> None:
             await session.commit()
 
         # Seed Master ApiKey
-        stmt_key = select(ApiKey).where(ApiKey.merchant_id == 1)
+        stmt_key = select(ApiKey).where(ApiKey.merchant_id == 1).limit(1)
         res_key = await session.execute(stmt_key)
         if not res_key.scalar_one_or_none():
             master_key = ApiKey(

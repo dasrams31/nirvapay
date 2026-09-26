@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     MASTER_SECRET_KEY: str = os.getenv("MASTER_SECRET_KEY", "sec_live_nirva_e3b829c7140f912b")
 
     # Telegram Alert Bot Config
-    TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", os.getenv("BOT_TOKEN", "8623661389:AAEZ1P3X3XfXzE3tT7PZ31xXq819921_nirva"))
     TELEGRAM_ADMIN_CHAT_ID: str = os.getenv("TELEGRAM_ADMIN_CHAT_ID", "606533609")
 
     class Config:
