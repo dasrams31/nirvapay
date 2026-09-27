@@ -67,9 +67,33 @@
 
     <script>
         const invoiceId = "{{ invoice.invoice_id }}";
+        const expiredAtStr = "{{ invoice.expired_at.isoformat() }}";
+        const expiredTime = new Date(expiredAtStr).getTime();
         let isPaid = {{ 'true' if invoice.status == 'PAID' else 'false' }};
 
         if (!isPaid) {
+            // Live Countdown Clock
+            const timerEl = document.getElementById('countdown-timer');
+            const countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const diff = expiredTime - now;
+
+                if (diff <= 0) {
+                    clearInterval(countdownInterval);
+                    if (timerEl) {
+                        timerEl.textContent = 'KEDALUWARSA';
+                        timerEl.classList.add('text-rose-600');
+                    }
+                    return;
+                }
+
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                if (timerEl) {
+                    timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                }
+            }, 1000);
+
             // Polling status per 4 detik
             const pollInterval = setInterval(async () => {
                 try {
@@ -77,6 +101,7 @@
                     const data = await res.json();
                     if (data.status === 'PAID') {
                         clearInterval(pollInterval);
+                        clearInterval(countdownInterval);
                         window.location.reload();
                     }
                 } catch (e) {

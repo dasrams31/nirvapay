@@ -262,6 +262,35 @@ async function fetchWebhooks() {
     }
 }
 
+// 3.1 Node & Webhook Testing
+async function testConnection(channel) {
+    showToast(`Menguji sinyal node ${channel.toUpperCase()}...`);
+    try {
+        const res = await fetch(`/api/v1/connections/${channel}/test`, { method: 'POST' });
+        const data = await res.json();
+        showToast(data.message || `Node ${channel.toUpperCase()} normal.`);
+    } catch (e) {
+        showToast(`Gagal menguji sinyal node ${channel}`);
+    }
+}
+
+async function testWebhookPing(webhookId) {
+    showToast('Mengirim tes ping ke endpoint webhook...');
+    try {
+        const res = await fetch(`/api/v1/webhooks/${webhookId}/ping`, { method: 'POST' });
+        const data = await res.json();
+        showToast(data.message || 'Tes ping berhasil dikirim.');
+    } catch (e) {
+        showToast('Gagal mengirim ping ke webhook.');
+    }
+}
+
+function handleExport() {
+    const fmt = document.getElementById('export-format')?.value || 'csv';
+    const url = fmt === 'xlsx' ? '/api/v1/export/xlsx' : '/api/v1/export/csv';
+    window.location.href = url;
+}
+
 // 4. Modals & Actions
 function openCreateInvoiceModal() {
     document.getElementById('modal-create-invoice').classList.remove('hidden');
@@ -269,6 +298,49 @@ function openCreateInvoiceModal() {
 
 function closeCreateInvoiceModal() {
     document.getElementById('modal-create-invoice').classList.add('hidden');
+}
+
+function openCreateApiKeyModal() {
+    const name = prompt("Masukkan nama identitas API Key baru:", "Website Production Key");
+    if (!name) return;
+    const isSandbox = confirm("Apakah ini API Key mode Sandbox?");
+    
+    fetch('/api/v1/apikeys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, is_sandbox: isSandbox })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('API Key baru berhasil dibuat!');
+            fetchApiKeys();
+        } else {
+            alert(data.message || 'Gagal membuat API Key');
+        }
+    })
+    .catch(() => alert('Terjadi kesalahan jaringan'));
+}
+
+function openCreateWebhookModal() {
+    const url = prompt("Masukkan URL Endpoint Webhook Anda (Contoh: https://tokoanda.com/webhook/payment):");
+    if (!url) return;
+    
+    fetch('/api/v1/webhooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Webhook endpoint berhasil ditambahkan!');
+            fetchWebhooks();
+        } else {
+            alert(data.message || 'Gagal menambahkan Webhook');
+        }
+    })
+    .catch(() => alert('Terjadi kesalahan jaringan'));
 }
 
 async function submitCreateInvoice(event) {

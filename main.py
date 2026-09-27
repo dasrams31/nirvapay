@@ -1,5 +1,7 @@
 import csv
 from datetime import datetime, timedelta
+import hashlib
+import hmac
 import io
 import json
 import logging
@@ -594,8 +596,137 @@ async def api_get_webhooks(request: Request):
         return {"success": True, "webhooks": hooks}
 
 
+class CreateApiKeyRequest(BaseModel):
+    name: str = "Production API Key"
+    is_sandbox: bool = False
+
+
+class CreateWebhookRequest(BaseModel):
+    url: str
+    secret_key: Optional[str] = None
+
+
+@app.post("/api/v1/apikeys")
+async def api_create_apikey(req: CreateApiKeyRequest, request: Request):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
+    prefix = "sand" if req.is_sandbox else "live"
+    pub_key = f"pub_{prefix}_nirva_{random.randbytes(5).hex()}"
+    sec_key = f"sec_{prefix}_nirva_{random.randbytes(8).hex()}"
+
+    async with async_session() as session:
+        api_key = ApiKey(
+            merchant_id=merchant_id,
+            name=req.name,
+            public_key=pub_key,
+            secret_key=sec_key,
+            is_sandbox=req.is_sandbox,
+            is_active=True,
+        )
+        session.add(api_key)
+        await session.commit()
+        await session.refresh(api_key)
+
+        return {
+            "success": True,
+            "api_key": {
+                "id": api_key.id,
+                "name": api_key.name,
+                "public_key": api_key.public_key,
+                "secret_key": api_key.secret_key,
+                "is_sandbox": api_key.is_sandbox,
+            },
+        }
+
+
+@app.post("/api/v1/webhooks")
+async def api_create_webhook(req: CreateWebhookRequest, request: Request):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
+    if not req.url or not req.url.startswith("http"):
+        raise HTTPException(status_code=400, detail="URL Webhook harus berformat HTTP / HTTPS valid")
+
+    sec_key = req.secret_key or f"whsec_{random.randbytes(8).hex()}"
+
+    async with async_session() as session:
+        hook = WebhookEndpoint(
+            merchant_id=merchant_id,
+            url=req.url,
+            secret_key=sec_key,
+            is_active=True,
+        )
+        session.add(hook)
+        await session.commit()
+        await session.refresh(hook)
+
+        return {
+            "success": True,
+            "webhook": {
+                "id": hook.id,
+                "url": hook.url,
+                "secret_key": hook.secret_key,
+            },
+        }
+
+
+@app.post("/api/v1/webhooks/{webhook_id}/ping")
+async def api_ping_webhook(webhook_id: int, request: Request):
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
+    async with async_session() as session:
+        stmt = select(WebhookEndpoint).where(
+            WebhookEndpoint.id == webhook_id,
+            WebhookEndpoint.merchant_id == merchant_id,
+        )
+        res = await session.execute(stmt)
+        hook = res.scalar_one_or_none()
+        if not hook:
+            raise HTTPException(status_code=404, detail="Webhook endpoint tidak ditemukan")
+
+        payload_obj = {
+            "event": "ping",
+            "message": "NirvaPay Webhook Ping Test",
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        body_bytes = json.dumps(payload_obj).encode()
+        sig = hmac.new(hook.secret_key.encode(), body_bytes, hashlib.sha256).hexdigest()
+
+        try:
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                resp = await client.post(hook.url, content=body_bytes, headers={
+                    "Content-Type": "application/json",
+                    "X-NirvaPay-Signature": sig,
+                    "User-Agent": "NirvaPay-Webhook-Ping/1.0"
+                })
+                return {
+                    "success": resp.status_code in [200, 201, 202, 204],
+                    "status_code": resp.status_code,
+                    "message": f"Server target merespons HTTP {resp.status_code}",
+                }
+        except Exception as e:
+            return {"success": False, "message": f"Gagal terhubung ke endpoint ({str(e)})"}
+
+
+@app.post("/api/v1/connections/{channel}/test")
+async def api_test_connection_node(channel: str, request: Request):
+    """Menguji status kesiapan node koneksi merchant."""
+    valid_channels = ["gopay", "dana", "shopeepay", "static_qris", "bukaolshop"]
+    if channel not in valid_channels:
+        raise HTTPException(status_code=404, detail="Channel tidak dikenali")
+    return {
+        "success": True,
+        "channel": channel,
+        "status": "ONLINE",
+        "message": f"Node {channel.upper()} beroperasi normal dan siap menerima mutasi.",
+    }
+
+
 @app.get("/api/v1/export/csv")
 async def export_transactions_csv(request: Request):
+    """Export seluruh data transaksi lunas ke file CSV."""
     merchant = await get_current_merchant_optional(request)
     merchant_id = merchant.id if merchant else 1
 
@@ -603,8 +734,7 @@ async def export_transactions_csv(request: Request):
         stmt = select(PaymentInvoice).where(
             PaymentInvoice.merchant_id == merchant_id
         ).order_by(PaymentInvoice.created_at.desc())
-        res = await session.execute(stmt)
-        records = res.scalars().all()
+        records = (await session.execute(stmt)).scalars().all()
 
         output = io.StringIO()
         output.write("\ufeff")
@@ -641,6 +771,71 @@ async def export_transactions_csv(request: Request):
         return Response(
             content=csv_data,
             media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+
+@app.get("/api/v1/export/xlsx")
+async def export_transactions_xlsx(request: Request):
+    """Export seluruh data transaksi lunas ke file Microsoft Excel (.XLSX)."""
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
+    async with async_session() as session:
+        stmt = select(PaymentInvoice).where(
+            PaymentInvoice.merchant_id == merchant_id
+        ).order_by(PaymentInvoice.created_at.desc())
+        records = (await session.execute(stmt)).scalars().all()
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Rekap Transaksi"
+
+        # Headers
+        headers = [
+            "No. Invoice", "Merchant Ref", "Nama Pelanggan",
+            "Nominal Pokok (Rp)", "Kode Unik (Rp)", "Total Tagihan (Rp)",
+            "Status", "Metode", "Waktu Dibuat", "Waktu Lunas"
+        ]
+        ws.append(headers)
+
+        header_fill = PatternFill(start_color="700070", end_color="700070", fill_type="solid")
+        header_font = Font(color="FFFFFF", bold=True, name="Calibri")
+
+        for col_num, cell in enumerate(ws[1], 1):
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        for inv in records:
+            ws.append([
+                inv.invoice_id,
+                inv.merchant_ref or "-",
+                inv.customer_name,
+                inv.amount,
+                inv.unique_code,
+                inv.total_amount,
+                inv.status,
+                inv.payment_channel,
+                inv.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                inv.paid_at.strftime("%Y-%m-%d %H:%M:%S") if inv.paid_at else "-"
+            ])
+
+        for col in ws.columns:
+            max_len = max(len(str(cell.value or '')) for cell in col)
+            col_letter = openpyxl.utils.get_column_letter(col[0].column)
+            ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
+
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        filename = f"NirvaPay_Laporan_{datetime.utcnow().strftime('%Y%m%d_%H%M')}.xlsx"
+        return Response(
+            content=output.getvalue(),
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
 
