@@ -8,44 +8,61 @@
     <link rel="shortcut icon" href="/static/favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
 
-    <div class="card-solid max-w-md w-full p-8 bg-white border border-slate-200 shadow-xl">
-        <!-- Logo -->
+    <!-- Ambient Blobs -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-purple-200/40 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-yellow-200/40 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="card-solid max-w-md w-full p-8 sm:p-10 bg-white border border-slate-200/80 shadow-2xl relative z-10 rounded-3xl">
+        <!-- Brand Header -->
         <div class="text-center mb-8">
-            <a href="/" class="inline-flex items-center gap-2.5 mb-3">
-                <img src="/static/logo.svg" alt="NirvaPay Logo" class="w-10 h-10 rounded-xl shadow-md">
-                <span class="text-2xl font-black text-slate-950">Nirva<span class="text-purple-800">Pay</span></span>
+            <a href="/" class="inline-flex items-center gap-3 mb-3 group">
+                <img src="/static/logo.svg" alt="NirvaPay Logo" class="w-12 h-12 rounded-2xl shadow-md group-hover:scale-105 transition">
+                <span class="text-2xl font-black text-slate-950 tracking-tight">Nirva<span class="text-purple-800">Pay</span></span>
             </a>
             <h1 class="text-lg font-bold text-slate-900">Masuk ke Console Merchant</h1>
-            <p class="text-xs text-slate-500 mt-1">Kelola mutasi, QRIS, dan integrasi API pembayaran toko Anda</p>
+            <p class="text-xs text-slate-500 mt-1 font-medium">Kelola mutasi, QRIS dinamis, dan integrasi toko digital Anda</p>
         </div>
 
         <form onsubmit="handleLogin(event)" class="space-y-4 text-xs">
             <div>
-                <label class="block font-bold text-slate-700 uppercase mb-1">Email Merchant</label>
-                <input type="email" id="login-email" required placeholder="nama@tokoanda.com" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700 text-sm">
+                <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Merchant</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-envelope text-xs"></i>
+                    </span>
+                    <input type="email" id="login-email" required placeholder="nama@tokoanda.com" class="w-full pl-10 pr-4 py-3 bg-slate-50/50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-purple-700 focus:ring-2 focus:ring-purple-100 transition text-sm">
+                </div>
             </div>
 
             <div>
-                <div class="flex items-center justify-between mb-1">
-                    <label class="block font-bold text-slate-700 uppercase">Password</label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider">Password</label>
                 </div>
-                <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700 text-sm">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-lock text-xs"></i>
+                    </span>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-3 bg-slate-50/50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-purple-700 focus:ring-2 focus:ring-purple-100 transition text-sm">
+                </div>
             </div>
 
-            <div id="login-error" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg text-xs font-semibold"></div>
+            <div id="login-error" class="hidden p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <i class="fa-solid fa-circle-exclamation text-rose-600 shrink-0"></i>
+                <span id="login-error-text"></span>
+            </div>
 
-            <button type="submit" id="btn-login" class="btn-purple w-full py-3 text-sm shadow-md">
-                Masuk ke Dashboard
+            <button type="submit" id="btn-login" class="btn-purple w-full py-3.5 text-sm shadow-lg font-bold rounded-xl mt-2">
+                <i class="fa-solid fa-right-to-bracket text-yellow-400 mr-1.5"></i> Masuk ke Dashboard
             </button>
         </form>
 
-        <div class="pt-6 border-t border-slate-200 text-center text-xs text-slate-500 mt-6">
-            Belum punya akun merchant? <a href="/register" class="font-bold text-purple-700 hover:text-purple-900">Daftar Sekarang</a>
+        <div class="pt-6 border-t border-slate-100 text-center text-xs text-slate-500 mt-6 font-medium">
+            Belum punya akun merchant? <a href="/register" class="font-bold text-purple-700 hover:text-purple-900 hover:underline">Daftar Sekarang</a>
         </div>
     </div>
 
@@ -54,9 +71,10 @@
             e.preventDefault();
             const btn = document.getElementById('btn-login');
             const errDiv = document.getElementById('login-error');
+            const errText = document.getElementById('login-error-text');
             errDiv.classList.add('hidden');
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memverifikasi...`;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memverifikasi Kredensial...`;
 
             const payload = {
                 email: document.getElementById('login-email').value.trim(),
@@ -71,17 +89,17 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    window.location.href = '/dashboard';
+                    window.location.href = data.redirect_url || '/dashboard';
                 } else {
-                    errDiv.textContent = data.message || 'Email atau password salah';
+                    errText.textContent = data.message || 'Email atau password tidak sesuai';
                     errDiv.classList.remove('hidden');
                 }
             } catch (err) {
-                errDiv.textContent = 'Terjadi kesalahan jaringan';
+                errText.textContent = 'Terjadi kesalahan koneksi ke server';
                 errDiv.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `Masuk ke Dashboard`;
+                btn.innerHTML = `<i class="fa-solid fa-right-to-bracket text-yellow-400 mr-1.5"></i> Masuk ke Dashboard`;
             }
         }
     </script>

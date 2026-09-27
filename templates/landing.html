@@ -11,65 +11,42 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
-        .font-bubble { font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif; }
-        
-        /* Floating Character Animations */
-        @keyframes floatSlow {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-12px) rotate(2deg); }
-        }
-        @keyframes floatReverse {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(10px) rotate(-2deg); }
-        }
-        @keyframes pulseGlow {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.04); opacity: 1; }
-        }
-        @keyframes coinBounce {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-8px) scale(1.08); }
-        }
-
-        .animate-float { animation: floatSlow 4s ease-in-out infinite; }
-        .animate-float-rev { animation: floatReverse 4.5s ease-in-out infinite; }
-        .animate-pulse-glow { animation: pulseGlow 3s ease-in-out infinite; }
-        .animate-coin { animation: coinBounce 2s ease-in-out infinite; }
-
-        .blob-purple {
-            background: radial-gradient(circle, rgba(112, 0, 112, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
-        }
-        .blob-gold {
-            background: radial-gradient(circle, rgba(255, 204, 0, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+        .hero-pattern {
+            background-color: #F8FAFC;
+            background-image: radial-gradient(#E2E8F0 1.2px, transparent 1.2px), radial-gradient(#E2E8F0 1.2px, #F8FAFC 1.2px);
+            background-size: 32px 32px;
+            background-position: 0 0, 16px 16px;
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 flex flex-col min-h-screen overflow-x-hidden">
 
     <!-- Top Navigation Bar -->
-    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div class="flex items-center gap-8">
                 <a href="/" class="flex items-center gap-3 text-decoration-none group">
-                    <img src="/static/logo.svg" alt="NirvaPay Logo" class="w-10 h-10 rounded-2xl shadow-md group-hover:scale-105 transition">
+                    <img src="/static/logo.svg" alt="NirvaPay Logo" class="w-11 h-11 rounded-2xl shadow-md group-hover:scale-105 transition">
                     <div>
                         <span class="text-2xl font-black tracking-tight text-slate-950">Nirva<span class="text-purple-800">Pay</span></span>
                         <span class="badge-gold ml-1.5 text-[10px] font-bold">GATEWAY 2.0</span>
                     </div>
                 </a>
 
-                <nav class="hidden md:flex items-center gap-7 text-sm font-bold text-slate-600">
+                <nav class="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600">
                     <a href="#fitur" class="hover:text-purple-800 transition flex items-center gap-1.5">
                         <i class="fa-solid fa-wand-magic-sparkles text-yellow-500"></i> Fitur & Solusi
                     </a>
                     <a href="#keunggulan" class="hover:text-purple-800 transition">Keunggulan</a>
                     <a href="#channel" class="hover:text-purple-800 transition">Metode Pembayaran</a>
-                    <a href="#integrasi" class="hover:text-purple-800 transition">Integrasi API</a>
+                    <a href="/docs" class="hover:text-purple-800 transition flex items-center gap-1">
+                        <i class="fa-solid fa-code text-purple-700"></i> REST API Docs
+                    </a>
                 </nav>
             </div>
 
-            <div class="flex items-center gap-3">
-                <a href="/login" class="px-4 py-2 text-xs font-bold text-purple-900 hover:bg-purple-50 rounded-xl transition border border-purple-200">
+            <div class="flex items-center gap-3.5">
+                <a href="/login" class="px-4 py-2.5 text-xs font-bold text-purple-900 hover:bg-purple-50 rounded-xl transition border border-purple-200">
                     Masuk
                 </a>
                 <a href="/register" class="btn-purple text-xs shadow-md">
@@ -79,56 +56,56 @@
         </div>
     </header>
 
-    <!-- Hero Section with Cute & Professional Mascot Illustration -->
-    <main class="flex-grow relative">
-        <!-- Background Ambient Blobs -->
-        <div class="absolute top-0 left-1/4 w-96 h-96 blob-purple rounded-full pointer-events-none"></div>
-        <div class="absolute top-20 right-10 w-96 h-96 blob-gold rounded-full pointer-events-none"></div>
+    <!-- Hero Section with Dot Pattern & Animated Mascot Showcase -->
+    <main class="flex-grow relative hero-pattern">
+        <!-- Ambient Color Accents -->
+        <div class="absolute top-10 left-1/4 w-96 h-96 bg-purple-300/30 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute top-20 right-10 w-96 h-96 bg-yellow-300/30 rounded-full blur-3xl pointer-events-none"></div>
 
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20">
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24 relative z-10">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                 
                 <!-- Left Hero Copy -->
                 <div class="lg:col-span-7 text-center lg:text-left space-y-6">
-                    <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-purple-100/70 border border-purple-300 text-purple-900 text-xs font-black tracking-wide shadow-sm">
+                    <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-purple-100/80 border border-purple-300/80 text-purple-900 text-xs font-black tracking-wide shadow-sm">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Otomatisasi Pembayaran QRIS Bisnis Digital #1
+                        Platform Agregator & QRIS Otomatis #1 di Indonesia
                     </div>
 
                     <h1 class="text-4xl sm:text-6xl font-black text-slate-950 tracking-tight leading-[1.12]">
-                        Terima Pembayaran QRIS <span class="text-purple-800 underline decoration-yellow-400 decoration-wavy">Otomatis & Real-Time</span> Tanpa Ribet!
+                        Terima Pembayaran QRIS <span class="text-purple-800 underline decoration-yellow-400 decoration-wavy">Otomatis & Cepat</span> Tanpa Ribet!
                     </h1>
 
                     <p class="text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl">
-                        Hubungkan QRIS GoPay Merchant, DANA, Toko BukaOlshop, dan Bot Telegram Anda ke satu gateway pintar. Settlement otomatis dalam 1 detik langsung masuk ke rekening/wallet Anda tanpa perantara.
+                        Hubungkan QRIS GoPay Merchant, DANA, Toko BukaOlshop, dan Bot Telegram Anda ke satu gateway pintar. Settlement otomatis dalam 1 detik langsung masuk ke rekening/wallet Anda tanpa biaya perantara.
                     </p>
 
                     <!-- CTAs -->
                     <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-                        <a href="/register" class="btn-purple px-8 py-3.5 text-sm font-bold shadow-lg shadow-purple-900/20 hover:scale-105 transition-transform">
-                            <i class="fa-solid fa-rocket text-yellow-400 text-base"></i> Mulai Sekarang — 1 Menit Jadi
+                        <a href="/register" class="btn-purple px-8 py-4 text-sm font-bold shadow-xl shadow-purple-900/20 hover:scale-105 transition-transform rounded-2xl">
+                            <i class="fa-solid fa-rocket text-yellow-400 text-base"></i> Buka Akun Toko Gratis
                         </a>
-                        <a href="/login" class="btn-secondary px-6 py-3.5 text-sm font-bold">
-                            <i class="fa-solid fa-gauge-high text-purple-800"></i> Buka Console Merchant
+                        <a href="/docs" class="btn-secondary px-6 py-4 text-sm font-bold rounded-2xl">
+                            <i class="fa-solid fa-book-bookmark text-purple-800"></i> Pelajari API Docs
                         </a>
                     </div>
 
                     <!-- Trust Micro-Badges -->
                     <div class="pt-6 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs font-bold text-slate-500">
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i> 0% Biaya Potongan Tambahan</div>
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-purple-700 text-sm"></i> Enkripsi EMVCo Standar BI</div>
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-500 text-sm"></i> 99.98% Uptime SLA</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> 0% Potongan Biaya Tambahan</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-purple-700 text-base"></i> Standar Keamanan EMVCo BI</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-500 text-base"></i> 99.98% Uptime Garansi</div>
                     </div>
                 </div>
 
-                <!-- Right Mascot & Tactile Visual Card (IPaymu-inspired Friendly Interactive Box) -->
+                <!-- Right Mascot & Tactile Visual Card -->
                 <div class="lg:col-span-5 relative flex justify-center">
                     
                     <!-- Cute Floating Mascot Box: "NirvaBot - Si Robot Kasir Super" -->
-                    <div class="card-solid p-6 bg-white border-2 border-purple-200 rounded-3xl shadow-2xl max-w-sm w-full relative z-10">
+                    <div class="card-solid p-7 bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-sm w-full relative z-10 card-hover-lift">
                         
                         <!-- Floating Cute Mascot Avatar -->
-                        <div class="absolute -top-12 -right-6 w-24 h-24 bg-gradient-to-tr from-purple-800 to-purple-600 rounded-2xl border-4 border-white shadow-xl flex flex-col items-center justify-center animate-float text-center z-20">
+                        <div class="absolute -top-12 -right-6 w-24 h-24 bg-gradient-to-tr from-purple-900 to-purple-700 rounded-3xl border-4 border-white shadow-xl flex flex-col items-center justify-center animate-float text-center z-20">
                             <!-- Mascot Eyes & Cute Face -->
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-bounce"></span>
@@ -139,8 +116,8 @@
                         </div>
 
                         <!-- Mini Coin Floating Decor -->
-                        <div class="absolute -bottom-4 -left-4 w-12 h-12 bg-yellow-400 text-purple-950 font-black rounded-full border-2 border-white shadow-lg flex items-center justify-center text-lg animate-coin z-20">
-                            Rp
+                        <div class="absolute -bottom-4 -left-4 w-12 h-12 bg-yellow-400 text-purple-950 font-black rounded-2xl border-2 border-white shadow-lg flex items-center justify-center text-base animate-pulse-soft z-20">
+                            <i class="fa-solid fa-coins"></i>
                         </div>
 
                         <!-- Card Header -->
@@ -153,14 +130,14 @@
                         </div>
 
                         <!-- Simulated Invoice Box -->
-                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center mb-4">
+                        <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-center mb-4">
                             <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Tagihan Pelanggan</div>
                             <div class="text-3xl font-black mono text-purple-950 mt-1">Rp 25.143</div>
                             <div class="text-[10px] text-emerald-700 font-bold mt-0.5">Termasuk Kode Unik 143</div>
 
                             <!-- Mock QR Frame -->
-                            <div class="mt-3 p-3 bg-white border border-slate-300 rounded-xl inline-block shadow-sm">
-                                <div class="w-36 h-36 bg-slate-900 rounded-lg p-2 flex flex-col items-center justify-center text-white text-center relative overflow-hidden">
+                            <div class="mt-3 p-3 bg-white border border-slate-300 rounded-2xl inline-block shadow-sm">
+                                <div class="w-36 h-36 bg-slate-950 rounded-xl p-2 flex flex-col items-center justify-center text-white text-center relative overflow-hidden">
                                     <i class="fa-solid fa-qrcode text-5xl text-yellow-400 mb-1"></i>
                                     <span class="text-[8px] font-mono text-purple-300 font-bold tracking-tight">DYNAMIC QRIS</span>
                                     <span class="text-[7px] text-slate-400">EMVCo Certified</span>
@@ -170,7 +147,7 @@
 
                         <!-- Live Feed Status -->
                         <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-left">
-                            <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
                                 <i class="fa-solid fa-check"></i>
                             </div>
                             <div>
@@ -185,34 +162,34 @@
         </section>
 
         <!-- Supported Payment Methods / Logo Cloud -->
-        <section id="channel" class="py-10 bg-white border-y border-slate-200">
+        <section id="channel" class="py-12 bg-white border-y border-slate-200/80">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-6">Mendukung Semua Pembayaran QRIS & E-Wallet Nasional</p>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-8">Mendukung Semua Pembayaran QRIS & E-Wallet Nasional</p>
                 <div class="flex flex-wrap items-center justify-center gap-8 sm:gap-14 font-black text-slate-700 text-sm sm:text-base">
-                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-qrcode text-purple-700 text-xl"></i> QRIS Nasional</div>
-                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-wallet text-emerald-600 text-xl"></i> GoPay Merchant</div>
-                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-mobile text-sky-600 text-xl"></i> DANA Indonesia</div>
-                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-bag-shopping text-orange-600 text-xl"></i> ShopeePay</div>
-                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-building-columns text-blue-800 text-xl"></i> BCA / Mandiri / BRI</div>
+                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-qrcode text-purple-700 text-2xl"></i> QRIS Nasional</div>
+                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-wallet text-emerald-600 text-2xl"></i> GoPay Merchant</div>
+                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-mobile text-sky-600 text-2xl"></i> DANA Indonesia</div>
+                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-bag-shopping text-orange-600 text-2xl"></i> ShopeePay</div>
+                    <div class="flex items-center gap-2 hover:text-purple-800 transition"><i class="fa-solid fa-building-columns text-blue-800 text-2xl"></i> BCA / Mandiri / BRI</div>
                 </div>
             </div>
         </section>
 
         <!-- Solutions & Features Cards -->
-        <section id="fitur" class="py-20 bg-slate-50">
+        <section id="fitur" class="py-24 bg-slate-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
                     <span class="badge-purple font-bold text-xs">SOLUSI BISNIS DIGITAL</span>
                     <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">Dirancang Khusus untuk Berbagai Skala Toko</h2>
-                    <p class="text-sm text-slate-600 font-medium">Baik toko online, bot Telegram digital, web SaaS, maupun aplikasi mobile Anda.</p>
+                    <p class="text-sm text-slate-600 font-medium">Mulai dari toko online, bot Telegram digital, web SaaS, hingga aplikasi mobile Anda.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     
                     <!-- Card 1: Bot Telegram Store -->
-                    <div class="card-solid p-8 bg-white border border-slate-200 rounded-3xl hover:border-purple-300 transition-all shadow-sm flex flex-col justify-between">
+                    <div class="card-solid p-8 bg-white border border-slate-200 rounded-3xl hover:border-purple-300 transition-all shadow-sm flex flex-col justify-between card-hover-lift">
                         <div>
-                            <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center text-2xl font-bold mb-6">
+                            <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center text-2xl font-bold mb-6 shadow-sm">
                                 <i class="fa-brands fa-telegram text-yellow-500"></i>
                             </div>
                             <h3 class="text-lg font-bold text-slate-900 mb-2">Bot & MiniApp Telegram</h3>
@@ -226,9 +203,9 @@
                     </div>
 
                     <!-- Card 2: BukaOlshop Integration -->
-                    <div class="card-solid p-8 bg-white border border-slate-200 rounded-3xl hover:border-purple-300 transition-all shadow-sm flex flex-col justify-between">
+                    <div class="card-solid p-8 bg-white border border-slate-200 rounded-3xl hover:border-purple-300 transition-all shadow-sm flex flex-col justify-between card-hover-lift">
                         <div>
-                            <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center text-2xl font-bold mb-6">
+                            <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center text-2xl font-bold mb-6 shadow-sm">
                                 <i class="fa-solid fa-cart-shopping text-yellow-500"></i>
                             </div>
                             <h3 class="text-lg font-bold text-slate-900 mb-2">Aplikasi Toko BukaOlshop</h3>
@@ -242,9 +219,9 @@
                     </div>
 
                     <!-- Card 3: Web & API Developer -->
-                    <div class="card-solid p-8 bg-white border border-slate-200 rounded-3xl hover:border-purple-300 transition-all shadow-sm flex flex-col justify-between">
+                    <div class="card-solid p-8 bg-white border border-slate-200 rounded-3xl hover:border-purple-300 transition-all shadow-sm flex flex-col justify-between card-hover-lift">
                         <div>
-                            <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center text-2xl font-bold mb-6">
+                            <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center text-2xl font-bold mb-6 shadow-sm">
                                 <i class="fa-solid fa-code text-yellow-500"></i>
                             </div>
                             <h3 class="text-lg font-bold text-slate-900 mb-2">Website & Aplikasi Mandiri</h3>
@@ -253,7 +230,7 @@
                             </p>
                         </div>
                         <div class="pt-4 border-t border-slate-100 text-xs font-bold text-purple-800 flex items-center gap-1">
-                            Baca Dokumentasi SDK <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            <a href="/docs" class="hover:underline">Baca Dokumentasi SDK</a> <i class="fa-solid fa-arrow-right text-[10px]"></i>
                         </div>
                     </div>
 
@@ -269,7 +246,7 @@
                     <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">Siap Memaksimalkan Penjualan Bisnis Digital Anda?</h2>
                     <p class="text-sm text-purple-200 font-medium">Buka akun merchant Anda sekarang dan nikmati kemudahan settlement otomatis tanpa potongan pihak ketiga.</p>
                     <div class="pt-2">
-                        <a href="/register" class="px-8 py-3.5 bg-yellow-400 hover:bg-yellow-300 text-purple-950 font-black rounded-xl text-sm shadow-xl hover:scale-105 transition-all inline-flex items-center gap-2">
+                        <a href="/register" class="px-8 py-4 bg-yellow-400 hover:bg-yellow-300 text-purple-950 font-black rounded-2xl text-sm shadow-xl hover:scale-105 transition-all inline-flex items-center gap-2">
                             <i class="fa-solid fa-user-plus"></i> Daftar Akun Merchant Sekarang
                         </a>
                     </div>
@@ -279,13 +256,13 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-10">
+    <footer class="bg-white border-t border-slate-200 py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-xl bg-purple-900 text-yellow-400 flex items-center justify-center font-bold text-sm">N</div>
+                <img src="/static/logo.svg" alt="NirvaPay Logo" class="w-9 h-9 rounded-xl shadow-sm">
                 <div>
                     <span class="text-sm font-black text-slate-900">NirvaPay Platform</span>
-                    <p class="text-[11px] text-slate-400">© 2026 PT Aeternum Kreasikan Bersama. All rights reserved.</p>
+                    <p class="text-[11px] text-slate-400 font-medium">© 2026 PT Aeternum Kreasikan Bersama. All rights reserved.</p>
                 </div>
             </div>
             <div class="flex items-center gap-6 text-xs font-bold text-slate-600">

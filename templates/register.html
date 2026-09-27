@@ -8,64 +8,71 @@
     <link rel="shortcut icon" href="/static/favicon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
 
-    <div class="card-solid max-w-lg w-full p-8 bg-white border border-slate-200 shadow-xl">
+    <!-- Ambient Blobs -->
+    <div class="absolute -top-32 -left-32 w-96 h-96 bg-purple-200/40 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-yellow-200/40 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="card-solid max-w-xl w-full p-8 sm:p-10 bg-white border border-slate-200/80 shadow-2xl relative z-10 rounded-3xl">
         <!-- Logo -->
         <div class="text-center mb-6">
-            <a href="/" class="inline-flex items-center gap-2.5 mb-2">
-                <img src="/static/logo.svg" alt="NirvaPay Logo" class="w-9 h-9 rounded-xl shadow-md">
-                <span class="text-2xl font-black text-slate-950">Nirva<span class="text-purple-800">Pay</span></span>
+            <a href="/" class="inline-flex items-center gap-3 mb-2 group">
+                <img src="/static/logo.svg" alt="NirvaPay Logo" class="w-12 h-12 rounded-2xl shadow-md group-hover:scale-105 transition">
+                <span class="text-2xl font-black text-slate-950 tracking-tight">Nirva<span class="text-purple-800">Pay</span></span>
             </a>
-            <h1 class="text-base font-bold text-slate-900">Buka Akun Merchant Baru</h1>
-            <p class="text-xs text-slate-500 mt-0.5">Mulai terima pembayaran QRIS otomatis untuk toko online Anda</p>
+            <h1 class="text-lg font-bold text-slate-900">Buka Akun Merchant Baru</h1>
+            <p class="text-xs text-slate-500 mt-0.5 font-medium">Mulai terima pembayaran QRIS otomatis untuk toko online & bot Anda</p>
         </div>
 
-        <form onsubmit="handleRegister(event)" class="space-y-3.5 text-xs">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <form onsubmit="handleRegister(event)" class="space-y-4 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Nama Bisnis / Toko</label>
-                    <input type="text" id="reg-business-name" required placeholder="Contoh: Maju Jaya Store" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700">
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Bisnis / Toko</label>
+                    <input type="text" id="reg-business-name" required placeholder="Contoh: Maju Jaya Store" class="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-purple-700 focus:ring-2 focus:ring-purple-100 transition">
                 </div>
                 <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Nama Pemilik</label>
-                    <input type="text" id="reg-owner-name" required placeholder="Contoh: Budi Santoso" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Email</label>
-                    <input type="email" id="reg-email" required placeholder="owner@tokoonline.com" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">No. WhatsApp / HP</label>
-                    <input type="tel" id="reg-phone" placeholder="081234567890" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700">
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Pemilik</label>
+                    <input type="text" id="reg-owner-name" required placeholder="Contoh: Budi Santoso" class="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-purple-700 focus:ring-2 focus:ring-purple-100 transition">
                 </div>
             </div>
 
-            <div>
-                <label class="block font-bold text-slate-700 uppercase mb-1">Password Baru</label>
-                <input type="password" id="reg-password" required minlength="6" placeholder="Minimal 6 karakter" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Email</label>
+                    <input type="email" id="reg-email" required placeholder="owner@tokoonline.com" class="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-purple-700 focus:ring-2 focus:ring-purple-100 transition">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">No. WhatsApp / HP</label>
+                    <input type="tel" id="reg-phone" placeholder="081234567890" class="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-purple-700 focus:ring-2 focus:ring-purple-100 transition">
+                </div>
             </div>
 
             <div>
-                <label class="block font-bold text-slate-700 uppercase mb-1">String QRIS Statis Merchant (Opsional)</label>
-                <textarea id="reg-static-qris" rows="2" placeholder="000201010211... (Bisa diisi nanti di settings)" class="w-full px-3 py-2 border border-slate-300 rounded-lg mono text-[11px] text-slate-900 focus:outline-none focus:border-purple-700"></textarea>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">Password Baru</label>
+                <input type="password" id="reg-password" required minlength="6" placeholder="Minimal 6 karakter" class="w-full px-3.5 py-2.5 bg-slate-50/50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:bg-white focus:border-purple-700 focus:ring-2 focus:ring-purple-100 transition">
             </div>
 
-            <div id="reg-error" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-lg text-xs font-semibold"></div>
+            <div>
+                <label class="block font-bold text-slate-700 uppercase tracking-wider mb-1">String QRIS Statis Merchant (Opsional)</label>
+                <textarea id="reg-static-qris" rows="2" placeholder="000201010211... (Bisa diisi nanti di menu Pengaturan)" class="w-full px-3.5 py-2 bg-slate-50/50 border border-slate-300 rounded-xl mono text-[11px] text-slate-900 focus:outline-none focus:bg-white focus:border-purple-700 focus:ring-2 focus:ring-purple-100 transition"></textarea>
+            </div>
 
-            <button type="submit" id="btn-reg" class="btn-purple w-full py-2.5 text-xs shadow-md">
-                Daftar & Dapatkan API Keys
+            <div id="reg-error" class="hidden p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                <i class="fa-solid fa-circle-exclamation text-rose-600 shrink-0"></i>
+                <span id="reg-error-text"></span>
+            </div>
+
+            <button type="submit" id="btn-reg" class="btn-purple w-full py-3.5 text-xs shadow-lg font-bold rounded-xl mt-2">
+                <i class="fa-solid fa-user-plus text-yellow-400 mr-1.5"></i> Daftar & Dapatkan API Keys
             </button>
         </form>
 
-        <div class="pt-5 border-t border-slate-200 text-center text-xs text-slate-500 mt-5">
-            Sudah punya akun? <a href="/login" class="font-bold text-purple-700 hover:text-purple-900">Masuk di Sini</a>
+        <div class="pt-5 border-t border-slate-100 text-center text-xs text-slate-500 mt-5 font-medium">
+            Sudah punya akun? <a href="/login" class="font-bold text-purple-700 hover:text-purple-900 hover:underline">Masuk di Sini</a>
         </div>
     </div>
 
@@ -74,6 +81,7 @@
             e.preventDefault();
             const btn = document.getElementById('btn-reg');
             const errDiv = document.getElementById('reg-error');
+            const errText = document.getElementById('reg-error-text');
             errDiv.classList.add('hidden');
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Memproses Pendaftaran...`;
@@ -97,15 +105,15 @@
                 if (data.success) {
                     window.location.href = '/dashboard';
                 } else {
-                    errDiv.textContent = data.message || 'Pendaftaran gagal';
+                    errText.textContent = data.message || 'Pendaftaran gagal';
                     errDiv.classList.remove('hidden');
                 }
             } catch (err) {
-                errDiv.textContent = 'Terjadi kesalahan jaringan';
+                errText.textContent = 'Terjadi kesalahan jaringan';
                 errDiv.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `Daftar & Dapatkan API Keys`;
+                btn.innerHTML = `<i class="fa-solid fa-user-plus text-yellow-400 mr-1.5"></i> Daftar & Dapatkan API Keys`;
             }
         }
     </script>
