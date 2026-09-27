@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aeternum Master Admin Panel — NirvaPay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 flex min-h-screen">
+
+    <!-- Sidebar Admin -->
+    <aside class="w-64 bg-slate-900 border-r border-purple-950/80 flex flex-col justify-between shrink-0 select-none">
+        <div class="p-5">
+            <!-- Brand -->
+            <a href="/admin" class="flex items-center gap-3 mb-8">
+                <div class="w-9 h-9 rounded-lg bg-purple-900 flex items-center justify-center text-yellow-400 font-black text-lg border border-purple-600 shadow-md">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <div>
+                    <span class="text-base font-black tracking-tight text-white">Aeternum <span class="text-yellow-400">Admin</span></span>
+                    <div class="text-[10px] font-mono text-purple-300">MASTER GATEWAY</div>
+                </div>
+            </a>
+
+            <!-- Navigation Sections -->
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-3 font-mono">GLOBAL CONTROLS</div>
+            <nav class="space-y-1">
+                <a href="#" class="nav-tab-item active !text-white !bg-purple-950/80 !border-purple-800" data-tab="admin-ringkasan">
+                    <i class="fa-solid fa-globe w-4 text-yellow-400"></i> Global Overview
+                </a>
+                <a href="#" class="nav-tab-item !text-slate-300 hover:!text-white hover:!bg-slate-800" data-tab="admin-merchants">
+                    <i class="fa-solid fa-store w-4 text-yellow-400"></i> Kelola Merchant
+                </a>
+                <a href="#" class="nav-tab-item !text-slate-300 hover:!text-white hover:!bg-slate-800" data-tab="admin-transactions">
+                    <i class="fa-solid fa-receipt w-4 text-yellow-400"></i> Semua Transaksi
+                </a>
+                <a href="/dashboard" target="_blank" class="nav-tab-item !text-slate-300 hover:!text-white hover:!bg-slate-800">
+                    <i class="fa-solid fa-arrow-up-right-from-square w-4 text-yellow-400"></i> Console Merchant <i class="fa-solid fa-external-link text-[10px] ml-auto"></i>
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-slate-800">
+            <div class="p-3 bg-slate-950 border border-purple-900/50 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-purple-300">System Role</span>
+                    <span class="badge-gold text-[9px]">SUPERADMIN</span>
+                </div>
+                <div class="mono text-[11px] text-slate-400 mt-1">User: Rama Danadipa</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col h-screen overflow-y-auto bg-slate-900/50">
+        <!-- Top Workspace Bar -->
+        <header class="h-16 bg-slate-950 border-b border-purple-950 px-8 flex items-center justify-between shrink-0 sticky top-0 z-40">
+            <div class="flex items-center gap-4">
+                <h1 class="text-base font-bold text-white font-mono">Aeternum System Console</h1>
+                <span class="badge-gold text-xs">Port :8098</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="fetchAdminSummary()" class="px-3 py-1.5 bg-slate-800 text-xs font-bold rounded-lg hover:bg-slate-700 text-slate-200 border border-slate-700">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Global Stats
+                </button>
+                <button onclick="handleLogout()" class="px-3 py-1.5 bg-rose-950/80 text-rose-300 border border-rose-800 rounded-lg text-xs font-bold hover:bg-rose-900 transition">
+                    <i class="fa-solid fa-power-off mr-1"></i> Keluar
+                </button>
+            </div>
+        </header>
+
+        <!-- Container -->
+        <div class="p-8 max-w-7xl mx-auto w-full space-y-6">
+
+            <!-- Global Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-5 bg-slate-950 border border-purple-900/50 rounded-2xl shadow-xl">
+                    <div class="text-xs font-mono font-bold text-slate-400 uppercase">Total Merchant Terdaftar</div>
+                    <div class="text-3xl font-black mono text-yellow-400 mt-1" id="adm-total-merchants">0</div>
+                    <div class="text-[11px] text-purple-300 mt-1">Akun toko aktif di ekosistem</div>
+                </div>
+                <div class="p-5 bg-slate-950 border border-purple-900/50 rounded-2xl shadow-xl">
+                    <div class="text-xs font-mono font-bold text-slate-400 uppercase">Omset Ekosistem Hari Ini</div>
+                    <div class="text-2xl font-black mono text-emerald-400 mt-1" id="adm-omset-today">Rp 0</div>
+                    <div class="text-[11px] text-slate-400 mt-1">Akumulasi seluruh tenant</div>
+                </div>
+                <div class="p-5 bg-slate-950 border border-purple-900/50 rounded-2xl shadow-xl">
+                    <div class="text-xs font-mono font-bold text-slate-400 uppercase">Total Omset Global</div>
+                    <div class="text-2xl font-black mono text-purple-400 mt-1" id="adm-omset-global">Rp 0</div>
+                    <div class="text-[11px] text-slate-400 mt-1">Sepanjang waktu</div>
+                </div>
+                <div class="p-5 bg-slate-950 border border-purple-900/50 rounded-2xl shadow-xl">
+                    <div class="text-xs font-mono font-bold text-slate-400 uppercase">Transaksi Sukses</div>
+                    <div class="text-3xl font-black mono text-white mt-1" id="adm-total-tx">0</div>
+                    <div class="text-[11px] text-emerald-400 mt-1"><i class="fa-solid fa-check"></i> Status Lunas (PAID)</div>
+                </div>
+            </div>
+
+            <!-- Merchant Table Control -->
+            <div class="bg-slate-950 border border-purple-900/50 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-5 border-b border-purple-950 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-sm font-bold text-white">Daftar Semua Merchant SaaS</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Kontrol status konfigurasi QRIS dan performa transaksi tiap merchant</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900/80 font-mono text-slate-400 uppercase text-[11px] border-b border-slate-800">
+                            <tr>
+                                <th class="p-3.5">ID</th>
+                                <th class="p-3.5">Bisnis / Toko</th>
+                                <th class="p-3.5">Email</th>
+                                <th class="p-3.5">Status QRIS</th>
+                                <th class="p-3.5">Total Tx</th>
+                                <th class="p-3.5">Total Omset</th>
+                                <th class="p-3.5">Role</th>
+                                <th class="p-3.5">Terdaftar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-merchants-tbody" class="divide-y divide-slate-800">
+                            <tr><td colspan="8" class="text-center py-8 text-slate-500">Memuat data merchant...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Global Transaction Feed -->
+            <div class="bg-slate-950 border border-purple-900/50 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-5 border-b border-purple-950 flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-white">Aktivitas Transaksi Global (Live Feed)</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900/80 font-mono text-slate-400 uppercase text-[11px] border-b border-slate-800">
+                            <tr>
+                                <th class="p-3.5">Invoice ID</th>
+                                <th class="p-3.5">Merchant</th>
+                                <th class="p-3.5">Pelanggan</th>
+                                <th class="p-3.5">Nominal</th>
+                                <th class="p-3.5">Metode</th>
+                                <th class="p-3.5">Status</th>
+                                <th class="p-3.5">Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-tx-tbody" class="divide-y divide-slate-800">
+                            <tr><td colspan="7" class="text-center py-8 text-slate-500">Memuat transaksi...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAdminSummary();
+            fetchAdminMerchants();
+        });
+
+        async function fetchAdminSummary() {
+            try {
+                const res = await fetch('/api/v1/admin/system-summary');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('adm-total-merchants').textContent = data.total_merchants;
+                    document.getElementById('adm-omset-today').textContent = formatRupiah(data.omset_today);
+                    document.getElementById('adm-omset-global').textContent = formatRupiah(data.global_omset);
+                    document.getElementById('adm-total-tx').textContent = data.total_tx_paid;
+
+                    const tbody = document.getElementById('admin-tx-tbody');
+                    if (data.recent_invoices && data.recent_invoices.length > 0) {
+                        tbody.innerHTML = data.recent_invoices.map(tx => `
+                            <tr class="hover:bg-slate-900/50">
+                                <td class="p-3.5 font-mono text-yellow-400 font-bold">${tx.invoice_id}</td>
+                                <td class="p-3.5 text-white font-semibold">${tx.merchant_name}</td>
+                                <td class="p-3.5 text-slate-400">${tx.customer_name}</td>
+                                <td class="p-3.5 font-mono font-bold text-emerald-400">${formatRupiah(tx.total_amount)}</td>
+                                <td class="p-3.5 font-mono text-purple-300">${tx.payment_channel}</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${tx.status === 'PAID' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950 text-amber-300 border border-amber-800'}">${tx.status}</span></td>
+                                <td class="p-3.5 text-slate-500">${new Date(tx.created_at).toLocaleTimeString('id-ID')}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-500">Belum ada transaksi di sistem.</td></tr>`;
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function fetchAdminMerchants() {
+            try {
+                const res = await fetch('/api/v1/admin/merchants');
+                const data = await res.json();
+                if (data.success) {
+                    const tbody = document.getElementById('admin-merchants-tbody');
+                    tbody.innerHTML = data.merchants.map(m => `
+                        <tr class="hover:bg-slate-900/50">
+                            <td class="p-3.5 font-mono font-bold text-slate-400">#${m.id}</td>
+                            <td class="p-3.5 font-bold text-white">${m.business_name}</td>
+                            <td class="p-3.5 font-mono text-purple-300">${m.email}</td>
+                            <td class="p-3.5">
+                                ${m.has_qris 
+                                    ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">QRIS Ready</span>`
+                                    : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">Manual Setup Req</span>`}
+                            </td>
+                            <td class="p-3.5 font-mono">${m.tx_count}</td>
+                            <td class="p-3.5 font-mono font-bold text-yellow-400">${formatRupiah(m.omset)}</td>
+                            <td class="p-3.5">${m.is_admin ? '<span class="text-yellow-400 font-bold font-mono">SUPERADMIN</span>' : '<span class="text-slate-400">Merchant</span>'}</td>
+                            <td class="p-3.5 text-slate-500">${m.created_at}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function formatRupiah(num) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(num || 0);
+        }
+
+        async function handleLogout() {
+            if (!confirm('Keluar dari Admin Console?')) return;
+            await fetch('/api/v1/auth/logout', { method: 'POST' });
+            window.location.href = '/admin/login';
+        }
+    </script>
+</body>
+</html>

@@ -104,6 +104,26 @@
 
             <!-- 1. TAB RINGKASAN -->
             <section id="section-ringkasan" class="tab-section space-y-6">
+                <!-- QRIS Setup Alert Banner for Non-Configured Merchants -->
+                <div id="banner-qris-warning" class="hidden p-5 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-l-4 border-amber-500 card-solid">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900">QRIS Toko Anda Belum Dikonfigurasi!</h3>
+                                <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                                    Sebagai pengguna merchant baru, Anda harus memasukkan payload string QRIS Statis toko Anda (dari GoPay Merchant / BCA / DANA) agar sistem dapat menginjeksi nominal otomatis dan membuat invoice tagihan.
+                                </p>
+                            </div>
+                        </div>
+                        <button onclick="openQrisSettingModal()" class="btn-purple text-xs whitespace-nowrap shadow-sm">
+                            <i class="fa-solid fa-gear text-yellow-400 mr-1"></i> Setup QRIS Sekarang
+                        </button>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="card-solid p-5">
                         <div class="text-xs font-bold text-slate-500 uppercase tracking-wider">Omset Hari Ini</div>
@@ -418,7 +438,7 @@
                             </div>
                             <div id="code-curl" class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs overflow-x-auto border border-slate-800 leading-relaxed">
 curl -X POST https://nirvapay.dasrams.biz.id/api/v1/invoices \
-  -H "Authorization: Bearer sec_live_nirva_e3b829c7140f912b" \
+  -H "Authorization: Bearer sec_live_YOUR_SECRET_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 25000,
@@ -440,7 +460,7 @@ import httpx
 
 async def create_qris(order_id: str, amount: int):
     url = "https://nirvapay.dasrams.biz.id/api/v1/invoices"
-    headers = {"Authorization": "Bearer sec_live_nirva_e3b829c7140f912b"}
+    headers = {"Authorization": "Bearer sec_live_YOUR_SECRET_KEY"}
     payload = {
         "amount": amount,
         "merchant_ref": order_id,
@@ -469,7 +489,7 @@ async function createPayment(orderId, amount) {
         customer_name: 'Customer Store',
         description: `Order #${orderId}`
     }, {
-        headers: { 'Authorization': 'Bearer sec_live_nirva_e3b829c7140f912b' }
+        headers: { 'Authorization': 'Bearer sec_live_YOUR_SECRET_KEY' }
     });
     return response.data.invoice;
 }
@@ -484,7 +504,7 @@ async function createPayment(orderId, amount) {
                             <div id="code-php" class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs overflow-x-auto border border-slate-800 leading-relaxed">
 use Illuminate\Support\Facades\Http;
 
-$response = Http::withToken('sec_live_nirva_e3b829c7140f912b')
+$response = Http::withToken('sec_live_YOUR_SECRET_KEY')
     ->post('https://nirvapay.dasrams.biz.id/api/v1/invoices', [
         'amount' => 25000,
         'merchant_ref' => 'INV-001',
@@ -530,6 +550,33 @@ return redirect($invoice['payment_url']);
                 <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
                     <button type="button" onclick="closeCreateInvoiceModal()" class="btn-secondary">Batal</button>
                     <button type="submit" id="btn-submit-invoice" class="btn-purple">Buat Tagihan QRIS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Setup QRIS Merchant -->
+    <div id="modal-setup-qris" class="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center hidden p-4">
+        <div class="card-solid w-full max-w-lg p-6 bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                <h3 class="text-sm font-bold text-slate-900"><i class="fa-solid fa-qrcode text-purple-700 mr-1.5"></i> Setup QRIS Statis Toko Anda</h3>
+                <button onclick="closeQrisSettingModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-base"></i></button>
+            </div>
+            <form onsubmit="submitSaveQris(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nama Toko / Bisnis:</label>
+                    <input type="text" id="inp-qris-bizname" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:border-purple-700">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">String Payload QRIS Statis Merchant (EMVCo):</label>
+                    <textarea id="inp-qris-payload" required rows="4" placeholder="00020101021126610014COM.GO-JEK..." class="w-full px-3 py-2 border border-slate-300 rounded-lg mono text-[11px] text-slate-900 focus:outline-none focus:border-purple-700"></textarea>
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        Scan QRIS toko Anda (dari GoPay Merchant / BCA / DANA) menggunakan Google Lens / QR Scanner lalu paste string teksnya di sini.
+                    </p>
+                </div>
+                <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeQrisSettingModal()" class="btn-secondary">Tutup</button>
+                    <button type="submit" id="btn-save-qris" class="btn-purple">Simpan QRIS</button>
                 </div>
             </form>
         </div>

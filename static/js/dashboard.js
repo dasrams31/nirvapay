@@ -74,6 +74,20 @@ async function loadTabContent(tab) {
 // 3. API Calls
 async function fetchSummaryMetrics() {
     try {
+        // Check QRIS setup status first
+        const setRes = await fetch('/api/v1/merchant/settings');
+        const setData = await setRes.json();
+        if (setData.success && setData.merchant) {
+            const warningBanner = document.getElementById('banner-qris-warning');
+            if (warningBanner) {
+                if (!setData.merchant.has_configured_qris && !setData.merchant.is_admin) {
+                    warningBanner.classList.remove('hidden');
+                } else {
+                    warningBanner.classList.add('hidden');
+                }
+            }
+        }
+
         const res = await fetch('/api/v1/dashboard/summary');
         const data = await res.json();
         if (data.success) {
@@ -87,6 +101,56 @@ async function fetchSummaryMetrics() {
         }
     } catch (err) {
         console.error('Failed to load metrics:', err);
+    }
+}
+
+function openQrisSettingModal() {
+    fetch('/api/v1/merchant/settings')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.merchant) {
+                document.getElementById('inp-qris-bizname').value = data.merchant.business_name || '';
+                document.getElementById('inp-qris-payload').value = data.merchant.static_qris_payload || '';
+            }
+            document.getElementById('modal-setup-qris').classList.remove('hidden');
+        })
+        .catch(() => document.getElementById('modal-setup-qris').classList.remove('hidden'));
+}
+
+function closeQrisSettingModal() {
+    document.getElementById('modal-setup-qris').classList.add('hidden');
+}
+
+async function submitSaveQris(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-save-qris');
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...`;
+
+    const payload = {
+        business_name: document.getElementById('inp-qris-bizname').value.trim(),
+        static_qris_payload: document.getElementById('inp-qris-payload').value.trim(),
+    };
+
+    try {
+        const res = await fetch('/api/v1/merchant/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('QRIS Merchant berhasil disimpan!');
+            closeQrisSettingModal();
+            fetchSummaryMetrics();
+        } else {
+            alert(data.detail || data.message || 'Gagal menyimpan QRIS');
+        }
+    } catch (err) {
+        alert('Terjadi kesalahan jaringan');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Simpan QRIS`;
     }
 }
 

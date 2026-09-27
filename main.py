@@ -122,8 +122,31 @@ async def page_landing(request: Request):
 async def page_login(request: Request):
     merchant = await get_current_merchant_optional(request)
     if merchant:
-        return RedirectResponse(url="/dashboard")
-    return templates.TemplateResponse(request=request, name="login.html", context={"settings": settings})
+        return RedirectResponse(url="/admin" if merchant.is_admin else "/dashboard")
+    return templates.TemplateResponse(request=request, name="login.html", context={"settings": settings, "is_admin_portal": False})
+
+
+@app.get("/admin/login", response_class=HTMLResponse)
+async def page_admin_login(request: Request):
+    merchant = await get_current_merchant_optional(request)
+    if merchant and merchant.is_admin:
+        return RedirectResponse(url="/admin")
+    return templates.TemplateResponse(request=request, name="admin_login.html", context={"settings": settings, "is_admin_portal": True})
+
+
+@app.get("/admin", response_class=HTMLResponse)
+@app.get("/admin/dashboard", response_class=HTMLResponse)
+async def page_admin_dashboard(request: Request):
+    """Console Master Admin Aeternum."""
+    merchant = await get_current_merchant_optional(request)
+    if not merchant or not merchant.is_admin:
+        return RedirectResponse(url="/admin/login")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin_dashboard.html",
+        context={"merchant": merchant, "settings": settings},
+    )
 
 
 @app.get("/register", response_class=HTMLResponse)
@@ -136,13 +159,10 @@ async def page_register(request: Request):
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def page_dashboard(request: Request):
-    """Console Dashboard Merchant."""
+    """Console Dashboard Merchant User."""
     merchant = await get_current_merchant_optional(request)
     if not merchant:
-        # Fallback to master merchant if accessing local console
-        async with async_session() as session:
-            stmt = select(Merchant).where(Merchant.id == 1)
-            merchant = (await session.execute(stmt)).scalar_one_or_none()
+        return RedirectResponse(url="/login")
 
     return templates.TemplateResponse(
         request=request,
@@ -226,6 +246,7 @@ async def api_auth_login(req: LoginRequest, response: Response):
             "merchant_id": merchant.id,
             "email": merchant.email,
             "business_name": merchant.business_name,
+            "is_admin": merchant.is_admin,
         })
         
         response.set_cookie(
@@ -235,7 +256,13 @@ async def api_auth_login(req: LoginRequest, response: Response):
             max_age=86400 * 7,
             samesite="lax",
         )
-        return {"success": True, "token": token, "business_name": merchant.business_name}
+        return {
+            "success": True,
+            "token": token,
+            "business_name": merchant.business_name,
+            "is_admin": merchant.is_admin,
+            "redirect_url": "/admin" if merchant.is_admin else "/dashboard",
+        }
 
 
 @app.post("/api/v1/auth/register")
@@ -253,15 +280,18 @@ async def api_auth_register(req: RegisterRequest, response: Response):
         pub_key = f"pub_live_nirva_{random_hex}"
         sec_key = f"sec_live_nirva_{random.randbytes(8).hex()}"
 
+        user_qris = req.static_qris_payload.strip() if req.static_qris_payload else None
+
         new_merchant = Merchant(
             email=req.email.lower().strip(),
             password_hash=hash_password(req.password),
             business_name=req.business_name,
             owner_name=req.owner_name,
             phone_number=req.phone_number,
-            static_qris_payload=req.static_qris_payload or settings.DEFAULT_STATIC_QRIS,
+            static_qris_payload=user_qris,
             webhook_secret=f"whsec_{random.randbytes(6).hex()}",
             is_active=True,
+            is_admin=False,
         )
         session.add(new_merchant)
         await session.commit()
@@ -311,10 +341,187 @@ async def api_auth_register(req: RegisterRequest, response: Response):
         return {"success": True, "token": token, "business_name": new_merchant.business_name}
 
 
-@app.post("/api/v1/auth/logout")
-async def api_auth_logout(response: Response):
-    response.delete_cookie(key="nirvapay_session")
-    return {"success": True, "message": "Logged out"}
+class UpdateMerchantSettingsRequest(BaseModel):
+    business_name: Optional[str] = None
+    owner_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    static_qris_payload: Optional[str] = None
+    webhook_secret: Optional[str] = None
+
+
+@app.get("/api/v1/merchant/settings")
+async def api_get_merchant_settings(request: Request):
+    """Mengambil konfigurasi profil dan QRIS merchant yang sedang login."""
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
+    async with async_session() as session:
+        stmt = select(Merchant).where(Merchant.id == merchant_id)
+        res = await session.execute(stmt)
+        m = res.scalar_one_or_none()
+        if not m:
+            raise HTTPException(status_code=404, detail="Merchant tidak ditemukan")
+
+        return {
+            "success": True,
+            "merchant": {
+                "id": m.id,
+                "email": m.email,
+                "business_name": m.business_name,
+                "owner_name": m.owner_name,
+                "phone_number": m.phone_number,
+                "static_qris_payload": m.static_qris_payload or "",
+                "has_configured_qris": bool(m.static_qris_payload and len(m.static_qris_payload.strip()) > 20),
+                "webhook_secret": m.webhook_secret,
+                "is_admin": m.is_admin,
+            },
+        }
+
+
+@app.put("/api/v1/merchant/settings")
+async def api_update_merchant_settings(req: UpdateMerchantSettingsRequest, request: Request):
+    """Memperbarui data profil, nama toko, dan string QRIS merchant."""
+    merchant = await get_current_merchant_optional(request)
+    merchant_id = merchant.id if merchant else 1
+
+    async with async_session() as session:
+        stmt = select(Merchant).where(Merchant.id == merchant_id)
+        res = await session.execute(stmt)
+        m = res.scalar_one_or_none()
+        if not m:
+            raise HTTPException(status_code=404, detail="Merchant tidak ditemukan")
+
+        if req.business_name:
+            m.business_name = req.business_name.strip()
+        if req.owner_name:
+            m.owner_name = req.owner_name.strip()
+        if req.phone_number is not None:
+            m.phone_number = req.phone_number.strip()
+        if req.static_qris_payload is not None:
+            qris_clean = req.static_qris_payload.strip()
+            if qris_clean and not (qris_clean.startswith("000201") or "ID.CO.QRIS" in qris_clean or len(qris_clean) > 30):
+                raise HTTPException(status_code=400, detail="Format QRIS tidak valid. Harus string EMVCo (berawalan 000201...)")
+            m.static_qris_payload = qris_clean
+        if req.webhook_secret:
+            m.webhook_secret = req.webhook_secret.strip()
+
+        await session.commit()
+        await session.refresh(m)
+
+        return {
+            "success": True,
+            "message": "Pengaturan merchant berhasil disimpan!",
+            "merchant": {
+                "id": m.id,
+                "business_name": m.business_name,
+                "static_qris_payload": m.static_qris_payload or "",
+                "has_configured_qris": bool(m.static_qris_payload and len(m.static_qris_payload.strip()) > 20),
+            },
+        }
+
+
+# ==============================================================================
+# 2.1 ADMIN EXCLUSIVE APIs (Full Ecosystem Control)
+# ==============================================================================
+@app.get("/api/v1/admin/merchants")
+async def api_admin_list_merchants(request: Request):
+    """Admin only: List all registered merchants and their stats."""
+    merchant = await get_current_merchant_required(request)
+    if not merchant.is_admin:
+        raise HTTPException(status_code=403, detail="Akses ditolak: Khusus Aeternum Admin")
+
+    async with async_session() as session:
+        stmt = select(Merchant).order_by(Merchant.id.asc())
+        res = await session.execute(stmt)
+        merchants_list = []
+        for m in res.scalars().all():
+            stmt_tx_count = select(func.count(PaymentInvoice.id)).where(PaymentInvoice.merchant_id == m.id)
+            tx_count = (await session.execute(stmt_tx_count)).scalar() or 0
+            
+            stmt_omset = select(func.sum(PaymentInvoice.total_amount)).where(
+                PaymentInvoice.merchant_id == m.id, PaymentInvoice.status == "PAID"
+            )
+            omset = (await session.execute(stmt_omset)).scalar() or 0.0
+
+            merchants_list.append({
+                "id": m.id,
+                "email": m.email,
+                "business_name": m.business_name,
+                "owner_name": m.owner_name,
+                "phone_number": m.phone_number or "-",
+                "has_qris": bool(m.static_qris_payload and len(m.static_qris_payload.strip()) > 20),
+                "is_active": m.is_active,
+                "is_admin": m.is_admin,
+                "tx_count": tx_count,
+                "omset": float(omset),
+                "created_at": m.created_at.strftime("%Y-%m-%d %H:%M"),
+            })
+        return {"success": True, "merchants": merchants_list}
+
+
+@app.get("/api/v1/admin/system-summary")
+async def api_admin_system_summary(request: Request):
+    """Admin only: Global aggregation across all merchants."""
+    merchant = await get_current_merchant_required(request)
+    if not merchant.is_admin:
+        raise HTTPException(status_code=403, detail="Akses ditolak: Khusus Aeternum Admin")
+
+    async with async_session() as session:
+        now = datetime.utcnow()
+        start_of_today = datetime(now.year, now.month, now.day)
+        
+        # Total Merchants
+        stmt_m = select(func.count(Merchant.id))
+        total_merchants = (await session.execute(stmt_m)).scalar() or 0
+
+        # Global Omset
+        stmt_omset_total = select(func.sum(PaymentInvoice.total_amount)).where(PaymentInvoice.status == "PAID")
+        global_omset = (await session.execute(stmt_omset_total)).scalar() or 0.0
+
+        stmt_omset_today = select(func.sum(PaymentInvoice.total_amount)).where(
+            PaymentInvoice.status == "PAID", PaymentInvoice.paid_at >= start_of_today
+        )
+        omset_today = (await session.execute(stmt_omset_today)).scalar() or 0.0
+
+        # Global Transactions Count
+        stmt_tx_paid = select(func.count(PaymentInvoice.id)).where(PaymentInvoice.status == "PAID")
+        total_tx_paid = (await session.execute(stmt_tx_paid)).scalar() or 0
+
+        stmt_tx_pending = select(func.count(PaymentInvoice.id)).where(
+            PaymentInvoice.status == "PENDING", PaymentInvoice.expired_at > now
+        )
+        total_tx_pending = (await session.execute(stmt_tx_pending)).scalar() or 0
+
+        # Global Recent Invoices with Merchant Info
+        stmt_recent = (
+            select(PaymentInvoice, Merchant.business_name)
+            .join(Merchant, PaymentInvoice.merchant_id == Merchant.id)
+            .order_by(PaymentInvoice.created_at.desc())
+            .limit(15)
+        )
+        res_recent = await session.execute(stmt_recent)
+        all_recent = [
+            {
+                "invoice_id": inv.invoice_id,
+                "merchant_name": biz_name,
+                "customer_name": inv.customer_name,
+                "total_amount": inv.total_amount,
+                "status": inv.status,
+                "payment_channel": inv.payment_channel,
+                "created_at": inv.created_at.isoformat(),
+            }
+            for inv, biz_name in res_recent.all()
+        ]
+
+        return {
+            "success": True,
+            "total_merchants": total_merchants,
+            "global_omset": float(global_omset),
+            "omset_today": float(omset_today),
+            "total_tx_paid": total_tx_paid,
+            "total_tx_pending": total_tx_pending,
+            "recent_invoices": all_recent,
+        }
 
 
 # ==============================================================================
@@ -431,7 +638,7 @@ async def api_get_invoices(request: Request, limit: int = 50):
 async def api_create_invoice(req: InvoiceCreateRequest, request: Request):
     """
     Membuat invoice pembayaran baru.
-    Mendukung autentikasi via ApiKey (Authorization: Bearer sec_live_...) maupun session merchant.
+    Mendukung autentikasi via ApiKey (Authorization: Bearer *** maupun session merchant.
     """
     if req.amount < 1000:
         raise HTTPException(status_code=400, detail="Minimal pembayaran Rp 1.000")
@@ -439,7 +646,18 @@ async def api_create_invoice(req: InvoiceCreateRequest, request: Request):
     # Resolve merchant
     merchant = await resolve_merchant_from_apikey(request) or await get_current_merchant_optional(request)
     merchant_id = merchant.id if merchant else 1
-    static_qris = merchant.static_qris_payload if (merchant and merchant.static_qris_payload) else settings.DEFAULT_STATIC_QRIS
+    
+    # Validasi QRIS untuk merchant biasa
+    static_qris = merchant.static_qris_payload if (merchant and merchant.static_qris_payload) else None
+    
+    if not static_qris:
+        if merchant and merchant.is_admin:
+            static_qris = settings.DEFAULT_STATIC_QRIS
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="QRIS Merchant Anda belum dikonfigurasi! Silakan masukkan string QRIS Statis Anda terlebih dahulu di menu Koneksi / Pengaturan Akun.",
+            )
 
     async with async_session() as session:
         stmt_pending = select(PaymentInvoice.total_amount).where(

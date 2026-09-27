@@ -24,12 +24,12 @@ class Settings(BaseSettings):
         "5925Aeternum Kreasikan Bersam6006SLEMAN61055558462140703A0111036216304D2F5",
     )
 
-    # Master API Keys
-    MASTER_PUBLIC_KEY: str = os.getenv("MASTER_PUBLIC_KEY", "pub_live_nirva_98831a29f8")
-    MASTER_SECRET_KEY: str = os.getenv("MASTER_SECRET_KEY", "sec_live_nirva_e3b829c7140f912b")
+    # Master API Keys Placeholder
+    MASTER_PUBLIC_KEY: str = os.getenv("MASTER_PUBLIC_KEY", "")
+    MASTER_SECRET_KEY: str = os.getenv("MASTER_SECRET_KEY", "")
 
     # Telegram Alert Bot Config
-    TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", os.getenv("BOT_TOKEN", "8623661389:AAEZ1P3X3XfXzE3tT7PZ31xXq819921_nirva"))
+    TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
     TELEGRAM_ADMIN_CHAT_ID: str = os.getenv("TELEGRAM_ADMIN_CHAT_ID", "606533609")
 
     class Config:
