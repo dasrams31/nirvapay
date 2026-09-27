@@ -404,6 +404,38 @@ async function testWebhookPing(webhookId) {
     }
 }
 
+// Doc Language Switcher
+let currentDocLang = 'curl';
+
+function switchDocLang(lang) {
+    currentDocLang = lang;
+    ['curl', 'python', 'nodejs', 'php'].forEach(l => {
+        const btn = document.getElementById(`tab-lang-${l}`);
+        const code = document.getElementById(`doc-code-${l}`);
+        if (btn) {
+            if (l === lang) {
+                btn.className = 'px-2.5 py-1 text-xs font-bold rounded-lg bg-purple-800 text-yellow-400 transition';
+            } else {
+                btn.className = 'px-2.5 py-1 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition';
+            }
+        }
+        if (code) {
+            if (l === lang) {
+                code.classList.remove('hidden');
+            } else {
+                code.classList.add('hidden');
+            }
+        }
+    });
+}
+
+function copyActiveDocCode() {
+    const codeEl = document.getElementById(`doc-code-${currentDocLang}`);
+    if (codeEl) {
+        copyToClipboard(codeEl.innerText);
+    }
+}
+
 function handleExport() {
     const fmt = document.getElementById('export-format')?.value || 'csv';
     const url = fmt === 'xlsx' ? '/api/v1/export/xlsx' : '/api/v1/export/csv';
