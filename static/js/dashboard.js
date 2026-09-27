@@ -68,6 +68,61 @@ async function loadTabContent(tab) {
         case 'webhooks':
             await fetchWebhooks();
             break;
+        case 'pengaturan':
+            await fetchSettingsTab();
+            break;
+    }
+}
+
+async function fetchSettingsTab() {
+    try {
+        const res = await fetch('/api/v1/merchant/settings');
+        const data = await res.json();
+        if (data.success && data.merchant) {
+            const m = data.merchant;
+            if (document.getElementById('tab-inp-bizname')) document.getElementById('tab-inp-bizname').value = m.business_name || '';
+            if (document.getElementById('tab-inp-ownername')) document.getElementById('tab-inp-ownername').value = m.owner_name || '';
+            if (document.getElementById('tab-inp-email')) document.getElementById('tab-inp-email').value = m.email || '';
+            if (document.getElementById('tab-inp-phone')) document.getElementById('tab-inp-phone').value = m.phone_number || '';
+            if (document.getElementById('tab-inp-qris')) document.getElementById('tab-inp-qris').value = m.static_qris_payload || '';
+            if (document.getElementById('tab-inp-secret')) document.getElementById('tab-inp-secret').value = m.webhook_secret || '';
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function submitSaveSettingsTab(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-save-settings-tab');
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...`;
+
+    const payload = {
+        business_name: document.getElementById('tab-inp-bizname').value.trim(),
+        owner_name: document.getElementById('tab-inp-ownername').value.trim(),
+        phone_number: document.getElementById('tab-inp-phone').value.trim(),
+        static_qris_payload: document.getElementById('tab-inp-qris').value.trim(),
+    };
+
+    try {
+        const res = await fetch('/api/v1/merchant/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('Profil & QRIS Toko berhasil diperbarui!');
+            fetchSummaryMetrics();
+        } else {
+            alert(data.detail || data.message || 'Gagal menyimpan pengaturan');
+        }
+    } catch (err) {
+        alert('Terjadi kesalahan jaringan');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk text-yellow-400 mr-1.5"></i> Simpan Perubahan`;
     }
 }
 
