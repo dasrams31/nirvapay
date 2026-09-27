@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient: Deep Royal Purple to Vivid Velvet -->
+    <linearGradient id="nirvaBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4A1B9D" />
+      <stop offset="100%" stop-color="#700070" />
+    </linearGradient>
+
+    <!-- Gold Accent Gradient: Radiant Jonquil to Amber Gold -->
+    <linearGradient id="nirvaGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE033" />
+      <stop offset="50%" stop-color="#FFCC00" />
+      <stop offset="100%" stop-color="#FFAC00" />
+    </linearGradient>
+
+    <!-- Subtle Inner Border Highlight -->
+    <linearGradient id="nirvaBorder" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255, 255, 255, 0.4)" />
+      <stop offset="100%" stop-color="rgba(255, 204, 0, 0.2)" />
+    </linearGradient>
+
+    <!-- Shadow for Depth -->
+    <filter id="dropGlow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#700070" flood-opacity="0.4" />
+    </filter>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#FFCC00" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Squircle with Drop Shadow -->
+  <rect x="24" y="24" width="464" height="464" rx="120" fill="url(#nirvaBg)" filter="url(#dropGlow)" />
+  <rect x="24" y="24" width="464" height="464" rx="120" fill="none" stroke="url(#nirvaBorder)" stroke-width="6" />
+
+  <!-- Iconic Monogram 'N' + Lightning Payment Vector -->
+  <g filter="url(#goldGlow)">
+    <!-- Left Vertical Stem (Crisp Modern Pillar) -->
+    <rect x="110" y="116" width="60" height="280" rx="28" fill="#FFFFFF" />
+    
+    <!-- Top-Left QR Code Anchor Dot (Square with rounded corners) -->
+    <rect x="122" y="128" width="36" height="36" rx="10" fill="url(#nirvaGold)" />
+
+    <!-- Dynamic Diagonal Lightning 'N' Bridge -->
+    <path d="M152 136 L360 376 L310 376 L124 162 Z" fill="url(#nirvaGold)" />
+
+    <!-- Right Vertical Stem (Power Tower) -->
+    <rect x="342" y="116" width="60" height="280" rx="28" fill="#FFFFFF" />
+
+    <!-- Bottom-Right QR Anchor Dot -->
+    <rect x="354" y="348" width="36" height="36" rx="10" fill="url(#nirvaGold)" />
+
+    <!-- Central High-Tech Energy Spark / Bolt Accent -->
+    <polygon points="266,190 236,260 274,260 246,330 300,248 262,248" fill="#FFFFFF" opacity="0.95" />
+  </g>
+</svg>

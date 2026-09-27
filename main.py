@@ -112,6 +112,16 @@ async def resolve_merchant_from_apikey(request: Request) -> Optional[Merchant]:
 # ==============================================================================
 # 1. FRONTEND WEB PAGES
 # ==============================================================================
+@app.get("/favicon.ico", include_in_schema=False)
+@app.get("/favicon.svg", include_in_schema=False)
+async def favicon_svg():
+    fav_path = os.path.join(base_dir, "static", "favicon.svg")
+    if os.path.exists(fav_path):
+        with open(fav_path, "rb") as f:
+            return Response(content=f.read(), media_type="image/svg+xml")
+    return Response(content=b"", status_code=404)
+
+
 @app.get("/", response_class=HTMLResponse)
 async def page_landing(request: Request):
     """Landing Page Publik NirvaPay."""
