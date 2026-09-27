@@ -118,6 +118,13 @@ async def page_landing(request: Request):
     return templates.TemplateResponse(request=request, name="landing.html", context={"settings": settings})
 
 
+@app.get("/docs", response_class=HTMLResponse)
+@app.get("/documentation", response_class=HTMLResponse)
+async def page_documentation(request: Request):
+    """Halaman Dokumentasi Lengkap Developer & REST API."""
+    return templates.TemplateResponse(request=request, name="documentation.html", context={"settings": settings})
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def page_login(request: Request):
     merchant = await get_current_merchant_optional(request)

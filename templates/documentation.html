@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NirvaPay Developer Documentation & REST API Reference</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+    <!-- Top Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="/" class="flex items-center gap-2.5 text-decoration-none">
+                    <div class="w-8 h-8 rounded-lg bg-purple-900 flex items-center justify-center text-yellow-400 font-black text-base border border-purple-950">
+                        N
+                    </div>
+                    <span class="text-xl font-black text-slate-950">Nirva<span class="text-purple-800">Pay</span></span>
+                </a>
+                <span class="badge-purple text-xs font-mono">v1.0.0 API Docs</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/dashboard" class="btn-purple text-xs">
+                    <i class="fa-solid fa-gauge-high text-yellow-400"></i> Buka Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="lg:col-span-3 space-y-6 select-none">
+            <div class="card-solid p-4 bg-white sticky top-24">
+                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 font-mono">DAFTAR ISI</div>
+                <nav class="space-y-1 text-xs font-semibold">
+                    <a href="#overview" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-purple-800 transition">1. Gambaran Umum</a>
+                    <a href="#auth" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-purple-800 transition">2. Autentikasi API Key</a>
+                    <a href="#endpoint-invoices" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-purple-800 transition">3. Buat Invoice (POST /invoices)</a>
+                    <a href="#endpoint-status" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-purple-800 transition">4. Cek Status (GET /status)</a>
+                    <a href="#webhooks" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-purple-800 transition">5. Webhooks & Signature</a>
+                    <a href="#bukaolshop" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-purple-800 transition">6. Integrasi BukaOlshop</a>
+                    <a href="#sdk-examples" class="block px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-purple-800 transition">7. Contoh Kode Multi-Bahasa</a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Documentation Content -->
+        <main class="lg:col-span-9 space-y-10">
+
+            <!-- 1. Overview -->
+            <section id="overview" class="card-solid p-8 bg-white space-y-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-purple-800 text-xs font-bold border border-purple-200">
+                    <i class="fa-solid fa-book-open"></i> REST API Standard
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">Dokumentasi Integrasi NirvaPay Gateway</h1>
+                <p class="text-sm text-slate-600 leading-relaxed font-medium">
+                    NirvaPay REST API memungkinkan aplikasi web, bot Telegram, sistem POS kasir, atau aplikasi toko online Anda untuk membuat tagihan QRIS dinamis berstandar EMVCo secara instan dan menerima konfirmasi pembayaran secara real-time via Webhook.
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                        <div class="text-[11px] font-bold text-slate-500 uppercase">Production Base URL</div>
+                        <div class="mono font-bold text-purple-950 text-sm">https://nirvapay.dasrams.biz.id</div>
+                    </div>
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                        <div class="text-[11px] font-bold text-slate-500 uppercase">Content Format</div>
+                        <div class="mono font-bold text-slate-800 text-sm">JSON (application/json)</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Authentication -->
+            <section id="auth" class="card-solid p-8 bg-white space-y-4">
+                <h2 class="text-xl font-bold text-slate-950">2. Autentikasi API Key</h2>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Setiap panggilan API memerlukan header HTTP <code class="mono font-bold text-purple-900 bg-purple-50 px-2 py-0.5 rounded">Authorization</code> yang berisi Secret Key (<code class="mono">sec_live_...</code> atau <code class="mono">sec_sand_...</code>) dari dashboard merchant Anda.
+                </p>
+
+                <div class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs border border-slate-800">
+<span class="text-slate-400">Authorization:</span> <span class="text-yellow-400">Bearer sec_live_YOUR_SECRET_KEY</span>
+<span class="text-slate-400">Content-Type:</span> <span class="text-cyan-400">application/json</span>
+                </div>
+            </section>
+
+            <!-- 3. Create Invoice -->
+            <section id="endpoint-invoices" class="card-solid p-8 bg-white space-y-6">
+                <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-1 rounded bg-purple-700 text-white font-mono font-bold text-xs">POST</span>
+                    <code class="mono font-bold text-slate-900 text-sm">/api/v1/invoices</code>
+                </div>
+                <p class="text-xs text-slate-600">Membuat transaksi pembayaran baru dengan kode QRIS dinamis dan mengembalikan tautan pembayaran.</p>
+
+                <div>
+                    <h3 class="text-xs font-bold text-slate-800 uppercase mb-3">Request Body (JSON)</h3>
+                    <div class="rounded-xl border border-slate-200 overflow-hidden">
+                        <table class="nirva-table">
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Tipe</th>
+                                    <th>Status</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="mono font-bold text-purple-900">amount</td>
+                                    <td class="mono text-slate-500">number</td>
+                                    <td><span class="badge-purple">Wajib</span></td>
+                                    <td class="text-xs">Nominal pokok tagihan (Minimal Rp 1.000).</td>
+                                </tr>
+                                <tr>
+                                    <td class="mono font-bold text-purple-900">merchant_ref</td>
+                                    <td class="mono text-slate-500">string</td>
+                                    <td><span class="badge-gold">Opsional</span></td>
+                                    <td class="text-xs">ID Pesanan unik dari sistem Anda (Contoh: <code class="mono">ORDER-9912</code>).</td>
+                                </tr>
+                                <tr>
+                                    <td class="mono font-bold text-purple-900">customer_name</td>
+                                    <td class="mono text-slate-500">string</td>
+                                    <td><span class="badge-gold">Opsional</span></td>
+                                    <td class="text-xs">Nama lengkap pelanggan.</td>
+                                </tr>
+                                <tr>
+                                    <td class="mono font-bold text-purple-900">customer_phone</td>
+                                    <td class="mono text-slate-500">string</td>
+                                    <td><span class="badge-gold">Opsional</span></td>
+                                    <td class="text-xs">Nomor WhatsApp pembeli.</td>
+                                </tr>
+                                <tr>
+                                    <td class="mono font-bold text-purple-900">callback_url</td>
+                                    <td class="mono text-slate-500">string</td>
+                                    <td><span class="badge-gold">Opsional</span></td>
+                                    <td class="text-xs">URL webhook endpoint di server Anda untuk menerima notifikasi saat lunas.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-slate-800 uppercase mb-2">Contoh Response (200 OK)</h3>
+                    <div class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs overflow-x-auto border border-slate-800 leading-relaxed">
+{
+  <span class="text-purple-400">"success"</span>: true,
+  <span class="text-purple-400">"invoice"</span>: {
+    <span class="text-cyan-400">"invoice_id"</span>: <span class="text-yellow-400">"INV-20260928-8419"</span>,
+    <span class="text-cyan-400">"amount"</span>: 25000.0,
+    <span class="text-cyan-400">"unique_code"</span>: 143,
+    <span class="text-cyan-400">"total_amount"</span>: 25143.0,
+    <span class="text-cyan-400">"qris_payload"</span>: <span class="text-yellow-400">"00020101021226610014COM.GO-JEK..."</span>,
+    <span class="text-cyan-400">"payment_url"</span>: <span class="text-yellow-400">"/pay/INV-20260928-8419"</span>,
+    <span class="text-cyan-400">"expired_at"</span>: <span class="text-yellow-400">"2026-09-28T01:15:00.000Z"</span>
+  }
+}
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Check Status -->
+            <section id="endpoint-status" class="card-solid p-8 bg-white space-y-4">
+                <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-1 rounded bg-emerald-600 text-white font-mono font-bold text-xs">GET</span>
+                    <code class="mono font-bold text-slate-900 text-sm">/api/v1/invoices/{invoice_id}/status</code>
+                </div>
+                <p class="text-xs text-slate-600">Mengecek status pembayaran invoice secara langsung (Polling).</p>
+                <div class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs border border-slate-800">
+{
+  <span class="text-purple-400">"invoice_id"</span>: <span class="text-yellow-400">"INV-20260928-8419"</span>,
+  <span class="text-purple-400">"status"</span>: <span class="text-emerald-400">"PAID"</span>,
+  <span class="text-purple-400">"total_amount"</span>: 25143.0,
+  <span class="text-purple-400">"paid_at"</span>: <span class="text-yellow-400">"2026-09-28T01:05:22.000Z"</span>
+}
+                </div>
+            </section>
+
+            <!-- 5. Webhook -->
+            <section id="webhooks" class="card-solid p-8 bg-white space-y-4">
+                <h2 class="text-xl font-bold text-slate-950">5. Webhooks & Payload Verification</h2>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Setiap pembayaran yang berhasil lunas akan memicu HTTP POST ke <code class="mono">callback_url</code> atau endpoint webhook yang telah Anda daftarkan di dashboard.
+                </p>
+
+                <div class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs border border-slate-800">
+{
+  <span class="text-purple-400">"event"</span>: <span class="text-emerald-400">"payment.paid"</span>,
+  <span class="text-purple-400">"invoice_id"</span>: <span class="text-yellow-400">"INV-20260928-8419"</span>,
+  <span class="text-purple-400">"merchant_ref"</span>: <span class="text-yellow-400">"ORDER-9912"</span>,
+  <span class="text-purple-400">"total_amount"</span>: 25143.0,
+  <span class="text-purple-400">"status"</span>: <span class="text-emerald-400">"PAID"</span>,
+  <span class="text-purple-400">"paid_at"</span>: <span class="text-yellow-400">"2026-09-28T01:05:22.000Z"</span>
+}
+                </div>
+            </section>
+
+            <!-- 6. SDK Examples Multi-Language -->
+            <section id="sdk-examples" class="card-solid p-8 bg-white space-y-6">
+                <h2 class="text-xl font-bold text-slate-950">6. Contoh Kode Integrasi Multi-Bahasa</h2>
+
+                <!-- cURL -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-xs text-slate-800 uppercase">1. cURL / Shell</span>
+                        <button onclick="copyToClipboard(document.getElementById('code-curl-full').innerText)" class="text-purple-700 font-semibold text-xs hover:underline">Salin</button>
+                    </div>
+                    <div id="code-curl-full" class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs overflow-x-auto border border-slate-800 leading-relaxed">
+curl -X POST https://nirvapay.dasrams.biz.id/api/v1/invoices \
+  -H "Authorization: Bearer sec_live_YOUR_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 50000,
+    "customer_name": "Rama Danadipa",
+    "merchant_ref": "ORDER-5001",
+    "description": "Langganan Layanan VIP",
+    "callback_url": "https://tokoanda.com/webhook/payment"
+  }'
+                    </div>
+                </div>
+
+                <!-- Python -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-xs text-slate-800 uppercase">2. Python (httpx / requests)</span>
+                        <button onclick="copyToClipboard(document.getElementById('code-py-full').innerText)" class="text-purple-700 font-semibold text-xs hover:underline">Salin</button>
+                    </div>
+                    <div id="code-py-full" class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs overflow-x-auto border border-slate-800 leading-relaxed">
+import httpx
+import asyncio
+
+async def create_invoice(amount: int, order_id: str):
+    url = "https://nirvapay.dasrams.biz.id/api/v1/invoices"
+    headers = {
+        "Authorization": "Bearer sec_live_YOUR_SECRET_KEY",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "amount": amount,
+        "merchant_ref": order_id,
+        "customer_name": "Budi Santoso",
+        "description": f"Pesanan #{order_id}"
+    }
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.post(url, json=payload, headers=headers)
+        data = response.json()
+        print("Payment Link:", data["invoice"]["payment_url"])
+        return data["invoice"]
+
+asyncio.run(create_invoice(50000, "ORDER-5001"))
+                    </div>
+                </div>
+
+                <!-- Node.js -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-xs text-slate-800 uppercase">3. Node.js (JavaScript / TypeScript)</span>
+                        <button onclick="copyToClipboard(document.getElementById('code-js-full').innerText)" class="text-purple-700 font-semibold text-xs hover:underline">Salin</button>
+                    </div>
+                    <div id="code-js-full" class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs overflow-x-auto border border-slate-800 leading-relaxed">
+const axios = require('axios');
+
+async function createNirvaPayInvoice(amount, orderId) {
+    try {
+        const response = await axios.post('https://nirvapay.dasrams.biz.id/api/v1/invoices', {
+            amount: amount,
+            merchant_ref: orderId,
+            customer_name: 'Budi Santoso',
+            description: `Pembelian #${orderId}`
+        }, {
+            headers: {
+                'Authorization': 'Bearer sec_live_YOUR_SECRET_KEY',
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log("Invoice Created:", response.data.invoice);
+        return response.data.invoice;
+    } catch (err) {
+        console.error("Error creating invoice:", err.response?.data || err.message);
+    }
+}
+
+createNirvaPayInvoice(50000, "ORDER-5001");
+                    </div>
+                </div>
+
+                <!-- PHP / Laravel -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-xs text-slate-800 uppercase">4. PHP (Laravel Http Client)</span>
+                        <button onclick="copyToClipboard(document.getElementById('code-php-full').innerText)" class="text-purple-700 font-semibold text-xs hover:underline">Salin</button>
+                    </div>
+                    <div id="code-php-full" class="p-4 bg-slate-900 text-slate-100 rounded-xl mono text-xs overflow-x-auto border border-slate-800 leading-relaxed">
+&lt;?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+
+class PaymentController extends Controller
+{
+    public function checkout()
+    {
+        $response = Http::withToken('sec_live_YOUR_SECRET_KEY')
+            ->post('https://nirvapay.dasrams.biz.id/api/v1/invoices', [
+                'amount' => 50000,
+                'merchant_ref' => 'ORDER-5001',
+                'customer_name' => 'Budi Santoso',
+                'description' => 'Top Up Saldo Akun'
+            ]);
+
+        if ($response->successful()) {
+            $invoice = $response->json()['invoice'];
+            return redirect('https://nirvapay.dasrams.biz.id' . $invoice['payment_url']);
+        }
+
+        return back()->with('error', 'Gagal membuat tagihan pembayaran.');
+    }
+}
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-8 text-center text-xs text-slate-500">
+        NirvaPay Developer Documentation • © 2026 PT Aeternum Kreasikan Bersama. All rights reserved.
+    </footer>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Kode berhasil disalin ke clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
