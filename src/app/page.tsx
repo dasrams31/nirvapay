@@ -5,48 +5,60 @@ export default async function LandingPage() {
   const merchant = await getCurrentMerchant();
 
   return (
-    <div className="min-h-screen bg-astro-dark text-astro-text astro-mesh selection:bg-astro-purple selection:text-white">
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-50 border-b border-astro-border bg-astro-dark/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-astro-purple to-astro-cyan shadow-glow">
-              <span className="font-black text-white text-base">N</span>
-            </div>
-            <span className="text-xl font-bold tracking-tight text-white">NirvaPay</span>
-            <span className="rounded-full border border-astro-purple/40 bg-astro-purple/10 px-2 py-0.5 text-[10px] font-bold text-astro-purpleGlow">
-              v2.0 Next.js
-            </span>
+    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900">
+      {/* Top Navbar */}
+      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-xl bg-purple-800 flex items-center justify-center text-white font-black text-xl shadow-md">
+                N
+              </div>
+              <div className="flex items-center">
+                <span className="text-2xl font-black tracking-tight text-slate-950">
+                  Nirva<span className="text-purple-800">Pay</span>
+                </span>
+                <span className="badge-gold ml-2 text-[10px]">GATEWAY 2.0</span>
+              </div>
+            </Link>
+
+            <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600">
+              <a href="#fitur" className="hover:text-purple-800 transition flex items-center gap-1.5">
+                <i className="fa-solid fa-wand-magic-sparkles text-yellow-500"></i> Fitur & Solusi
+              </a>
+              <a href="#keunggulan" className="hover:text-purple-800 transition">
+                Keunggulan
+              </a>
+              <a href="#integrasi" className="hover:text-purple-800 transition">
+                Integrasi Channel
+              </a>
+              <Link href="/dashboard/docs" className="hover:text-purple-800 transition flex items-center gap-1.5">
+                <i className="fa-solid fa-code text-slate-400"></i> REST API Docs
+              </Link>
+            </nav>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-astro-slate">
-            <a href="#features" className="hover:text-white transition-colors">Fitur</a>
-            <a href="#channels" className="hover:text-white transition-colors">Saluran Pembayaran</a>
-            <a href="#api" className="hover:text-white transition-colors">Developer API</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-          </nav>
-
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {merchant ? (
               <Link
                 href="/dashboard"
-                className="rounded-xl bg-astro-purple px-4 py-2 text-sm font-bold text-white shadow-glow hover:bg-astro-purpleGlow transition-all"
+                className="btn-purple text-sm flex items-center gap-2 shadow-sm"
               >
-                Masuk Dashboard →
+                <i className="fa-solid fa-gauge"></i> Dashboard ({merchant.name.split(" ")[0]})
               </Link>
             ) : (
               <>
                 <Link
                   href="/login"
-                  className="rounded-xl border border-astro-border px-4 py-2 text-sm font-semibold text-astro-slate hover:bg-astro-card hover:text-white transition-all"
+                  className="text-sm font-bold text-slate-700 hover:text-purple-800 px-4 py-2 transition"
                 >
                   Masuk
                 </Link>
                 <Link
                   href="/register"
-                  className="rounded-xl bg-astro-purple px-4 py-2 text-sm font-bold text-white shadow-glow hover:bg-astro-purpleGlow transition-all"
+                  className="btn-purple text-sm flex items-center gap-2 shadow-sm"
                 >
-                  Daftar Merchant
+                  Daftar Merchant <i className="fa-solid fa-arrow-right text-xs"></i>
                 </Link>
               </>
             )}
@@ -55,132 +67,106 @@ export default async function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative mx-auto max-w-7xl px-6 pt-20 pb-16 text-center lg:pt-28">
-        <div className="inline-flex items-center gap-2 rounded-full border border-astro-border bg-astro-card/80 px-3.5 py-1.5 text-xs font-semibold text-astro-slate shadow-soft mb-6">
-          <span className="h-2 w-2 rounded-full bg-astro-emerald animate-pulse"></span>
-          Direct EMVCo Dynamic QRIS Gateway · 0% Markup Fee
-        </div>
-
-        <h1 className="mx-auto max-w-4xl text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl astro-gradient-text leading-[1.1]">
-          Payment Gateway QRIS Dinamis Multi-Merchant Mandiri
-        </h1>
-
-        <p className="mx-auto mt-6 max-w-2xl text-base md:text-lg text-astro-slate leading-relaxed">
-          Terima pembayaran instan dari GoPay, OVO, DANA, BCA, ShopeePay, dan seluruh bank di Indonesia dengan verifikasi mutasi otomatis real-time.
-        </p>
-
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/register"
-            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-astro-purple to-indigo-600 px-6 py-3.5 text-base font-bold text-white shadow-glow hover:opacity-95 transition-all"
-          >
-            <span>Mulai Gratis Sekarang</span>
-            <span>→</span>
-          </Link>
-          <a
-            href="/dashboard/docs"
-            className="flex items-center gap-2 rounded-2xl border border-astro-border bg-astro-card px-6 py-3.5 text-base font-semibold text-astro-slate hover:bg-astro-cardHover hover:text-white transition-all"
-          >
-            <span>Dokumentasi API</span>
-            <span className="font-mono text-xs text-astro-purpleGlow">REST</span>
-          </a>
-        </div>
-
-        {/* Feature Cards Grid */}
-        <div id="features" className="mt-20 grid gap-6 md:grid-cols-3 text-left">
-          <div className="astro-card rounded-3xl p-6 shadow-soft space-y-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-astro-purple/10 border border-astro-purple/20 text-astro-purpleGlow font-bold">
-              ⚡
-            </div>
-            <h3 className="text-lg font-bold text-white">Dynamic EMVCo Injection</h3>
-            <p className="text-sm text-astro-slate leading-relaxed">
-              Kalkulasi otomatis Tag 54 nominal dan CRC16-CCITT checksum standar Bank Indonesia & ASPI secara instan.
-            </p>
-          </div>
-
-          <div className="astro-card rounded-3xl p-6 shadow-soft space-y-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-astro-cyan/10 border border-astro-cyan/20 text-astro-cyan font-bold">
-              🛡️
-            </div>
-            <h3 className="text-lg font-bold text-white">Auto-Settlement & Webhook</h3>
-            <p className="text-sm text-astro-slate leading-relaxed">
-              Penerimaan mutasi otomatis via MacroDroid/Tasker forwarder dengan HMAC-SHA256 signature dispatching.
-            </p>
-          </div>
-
-          <div className="astro-card rounded-3xl p-6 shadow-soft space-y-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-astro-emerald/10 border border-astro-emerald/20 text-astro-emerald font-bold">
-              📊
-            </div>
-            <h3 className="text-lg font-bold text-white">Multi-Merchant & Analytics</h3>
-            <p className="text-sm text-astro-slate leading-relaxed">
-              Dashboard lengkap manajemen invoice, pemantauan saldo dompet, ekspor CSV, dan API Key multi-proyek.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Code Demo Section */}
-      <section id="api" className="border-t border-astro-border/50 bg-astro-card/40 py-16">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
-            <div>
-              <span className="rounded-full bg-astro-purple/10 border border-astro-purple/20 px-3 py-1 text-xs font-bold text-astro-purpleGlow">
-                Developer Friendly
-              </span>
-              <h2 className="mt-3 text-3xl font-extrabold text-white sm:text-4xl">
-                Integrasi dalam 3 Baris Kode
-              </h2>
-              <p className="mt-4 text-sm text-astro-slate leading-relaxed">
-                Gunakan REST API standar industri untuk membuat invoice, mengambil status pembayaran, dan mendengarkan webhook callback di server aplikasi kamu.
-              </p>
-              
-              <ul className="mt-6 space-y-2.5 text-xs text-astro-slate">
-                <li className="flex items-center gap-2">
-                  <span className="text-astro-emerald font-bold">✓</span>
-                  <span>Header otentikasi Bearer API Key standar</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-astro-emerald font-bold">✓</span>
-                  <span>Anti-collision unique amount code protection</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-astro-emerald font-bold">✓</span>
-                  <span>Webhook event idempotency & auto-retry</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="overflow-hidden rounded-2xl border border-astro-border bg-astro-dark shadow-glow">
-              <div className="flex items-center justify-between border-b border-astro-border px-4 py-2.5 bg-astro-card text-xs text-astro-slate">
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-500"></span>
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-                  <span className="ml-2 font-mono">POST /api/v1/invoices</span>
-                </div>
-                <span className="font-mono text-[10px]">JSON</span>
+      <section className="hero-pattern py-20 lg:py-28 border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-7 space-y-8 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-purple-50 border border-purple-200 text-purple-800 px-4 py-1.5 rounded-full text-xs font-bold shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Infrastruktur Multi-Channel QRIS Realtime & Stabil
               </div>
-              <pre className="p-4 font-mono text-xs text-astro-slate overflow-x-auto leading-relaxed">
-{`curl -X POST https://nirvapay.dasrams.biz.id/api/v1/invoices \\
-  -H "Authorization: Bearer sec_live_xxx" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "amount": 50000,
-    "merchant_ref": "ORDER-1001",
-    "customer_name": "Rama Danadipa",
-    "callback_url": "https://yourapp.com/webhook"
-  }'`}
-              </pre>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.15]">
+                Solusi Agregator <span className="text-purple-800">QRIS Dinamis</span> untuk Bisnis Digital & Bot Anda
+              </h1>
+
+              <p className="text-lg text-slate-600 font-medium max-w-2xl leading-relaxed">
+                Terima pembayaran otomatis dari seluruh e-wallet & mobile banking di Indonesia (GoPay, OVO, DANA, BCA, ShopeePay). Integrasi cepat via Webhook, SDK & REST API.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+                <Link
+                  href="/register"
+                  className="btn-purple w-full sm:w-auto text-base px-8 py-3.5 flex items-center justify-center gap-3 shadow-md"
+                >
+                  Mulai Sekarang Gratis <i className="fa-solid fa-rocket"></i>
+                </Link>
+                <Link
+                  href="/dashboard/docs"
+                  className="w-full sm:w-auto bg-white hover:bg-slate-100 text-slate-800 font-bold border border-slate-300 px-6 py-3.5 rounded-xl transition text-base flex items-center justify-center gap-2"
+                >
+                  <i className="fa-solid fa-book text-slate-400"></i> Baca Dokumentasi
+                </Link>
+              </div>
+
+              <div className="flex items-center justify-center lg:justify-start gap-8 pt-4 text-xs font-bold text-slate-500">
+                <div className="flex items-center gap-2">
+                  <i className="fa-solid fa-shield-halved text-emerald-600 text-base"></i> 0% Fee Transaksi
+                </div>
+                <div className="flex items-center gap-2">
+                  <i className="fa-solid fa-bolt text-yellow-500 text-base"></i> Settlement Cepat
+                </div>
+                <div className="flex items-center gap-2">
+                  <i className="fa-solid fa-lock text-purple-800 text-base"></i> Self-Hosted & Aman
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5">
+              <div className="card-white p-6 md:p-8 space-y-6">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center font-bold">
+                      <i className="fa-solid fa-qrcode text-lg"></i>
+                    </div>
+                    <div>
+                      <h2 className="font-extrabold text-slate-900 text-sm">Simulasi QRIS Dinamis</h2>
+                      <p className="text-xs text-slate-500">Auto Generate Standar EMVCo</p>
+                    </div>
+                  </div>
+                  <span className="badge-purple">LIVE TEST</span>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center space-y-3">
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Tagihan</div>
+                  <div className="text-3xl font-black text-slate-950 font-mono">Rp 50.321</div>
+                  <div className="text-[11px] text-slate-500">Termasuk kode unik verifikasi otomatis</div>
+                </div>
+
+                <div className="space-y-3 text-xs font-semibold text-slate-600">
+                  <div className="flex justify-between py-1.5 border-b border-slate-100">
+                    <span>Merchant</span>
+                    <span className="text-slate-900 font-bold">PT Aeternum Kreasi Digital</span>
+                  </div>
+                  <div className="flex justify-between py-1.5 border-b border-slate-100">
+                    <span>ID Transaksi</span>
+                    <span className="font-mono font-bold text-slate-900">INV-883921-TEST</span>
+                  </div>
+                  <div className="flex justify-between py-1.5">
+                    <span>Status Notifikasi</span>
+                    <span className="text-emerald-600 font-bold flex items-center gap-1">
+                      <i className="fa-solid fa-circle-check"></i> Webhook Ready
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-astro-border bg-astro-dark py-8 text-center text-xs text-astro-slate">
-        <p>© 2026 NirvaPay · PT Aeternum Kreasikan Bersama. All rights reserved.</p>
-        <p className="mt-1">Powered by Next.js, Express.js & PostgreSQL on dasrams.biz.id</p>
+      <footer className="bg-white border-t border-slate-200 py-10 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="font-black text-slate-950">Nirva<span className="text-purple-800">Pay</span></span>
+            <span className="text-xs text-slate-400">© 2026 PT Aeternum Kreasikan Bersama. All rights reserved.</span>
+          </div>
+          <div className="flex items-center gap-6 text-xs font-bold text-slate-500">
+            <Link href="/dashboard/docs" className="hover:text-purple-800">API Documentation</Link>
+            <Link href="/login" className="hover:text-purple-800">Merchant Portal</Link>
+          </div>
+        </div>
       </footer>
     </div>
   );

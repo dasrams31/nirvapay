@@ -1,56 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Fredoka:wght@600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg-dark: #0b0d13;
-  --bg-card: #121620;
-  --border: #232938;
+  --bg-canvas: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #F1F5F9;
+  --border: #E2E8F0;
+  --purple-main: #700070;
+  --gold-main: #FFCC00;
 }
 
 body {
-  background-color: #0b0d13;
-  color: #f8fafc;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: #F8FAFC;
+  color: #0F172A;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.hero-pattern {
+  background-color: #F8FAFC;
+  background-image: radial-gradient(#E2E8F0 1.2px, transparent 1.2px), radial-gradient(#E2E8F0 1.2px, #F8FAFC 1.2px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
 }
-::-webkit-scrollbar-track {
-  background: #0b0d13;
+
+.card-white {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
-::-webkit-scrollbar-thumb {
-  background: #232938;
+
+.badge-gold {
+  background-color: #FEF9C3;
+  color: #854D0E;
+  border: 1px solid #FEF08A;
+  padding: 2px 8px;
   border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #7c3aed;
-}
-
-/* Astro Glow & Mesh Backgrounds */
-.astro-mesh {
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+  font-weight: 700;
+  font-size: 11px;
 }
 
-.astro-card {
-  background-color: #121620;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+.badge-purple {
+  background-color: #FAF5FF;
+  color: #700070;
+  border: 1px solid #E9D5FF;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 11px;
 }
 
-.astro-card:hover {
-  border-color: rgba(139, 92, 246, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.2);
+.btn-purple {
+  background-color: #700070;
+  color: #FFFFFF;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 10px 20px;
+  transition: all 0.15s ease;
 }
 
-.astro-gradient-text {
-  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #8b5cf6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.btn-purple:hover {
+  background-color: #580058;
+  transform: translateY(-1px);
 }

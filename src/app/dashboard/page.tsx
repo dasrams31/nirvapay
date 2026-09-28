@@ -15,179 +15,156 @@ export default async function DashboardPage() {
       COUNT(CASE WHEN status = 'PENDING' THEN 1 END) as pending_count,
       COUNT(*) as total_count
     FROM payment_invoices
-    WHERE merchant_id = ${merchant.merchantId};
-  `;
-
-  const [merchantRow] = await sql`
-    SELECT balance FROM merchants WHERE id = ${merchant.merchantId};
+    WHERE merchant_id = ${merchant.merchantId}
   `;
 
   const recentInvoices = await sql`
-    SELECT id, invoice_number, customer_name, amount, unique_code, total_amount, payment_channel, status, paid_at, created_at
+    SELECT id, invoice_number, customer_name, total_amount, payment_channel, status, created_at, paid_at
     FROM payment_invoices
     WHERE merchant_id = ${merchant.merchantId}
     ORDER BY created_at DESC
-    LIMIT 8;
+    LIMIT 5
   `;
 
-  const [apiKey] = await sql`
-    SELECT public_key, secret_key FROM api_keys WHERE merchant_id = ${merchant.merchantId} AND is_active = TRUE LIMIT 1;
+  const [merchantDetail] = await sql`
+    SELECT balance, qris_static_string, qris_nmid
+    FROM merchants
+    WHERE id = ${merchant.merchantId}
   `;
+
+  const totalVolume = Number(stats?.total_volume || 0);
+  const currentBalance = Number(merchantDetail?.balance || 0);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Top Banner / Welcome */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-            Selamat Datang, {merchant.name}!
-          </h1>
-          <p className="mt-1 text-xs md:text-sm text-astro-slate">
-            Ringkasan lalu lintas pembayaran QRIS dan performa transaksi toko Anda.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard/invoices"
-            className="rounded-xl border border-astro-border bg-astro-card px-4 py-2.5 text-xs font-semibold text-astro-slate hover:bg-astro-cardHover hover:text-white transition-all"
-          >
-            Semua Invoice
-          </Link>
-          <a
-            href="/api/v1/export/csv"
-            className="rounded-xl bg-astro-purple px-4 py-2.5 text-xs font-bold text-white shadow-glow hover:bg-astro-purpleGlow transition-all flex items-center gap-1.5"
-          >
-            <span>📥</span>
-            <span>Ekspor Laporan (CSV)</span>
-          </a>
-        </div>
-      </div>
-
-      {/* Metrics Cards Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="astro-card rounded-2xl p-5 shadow-soft space-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-astro-slate">Total Volume Lunas</span>
-          <p className="text-2xl font-extrabold text-white tabular-nums">
-            Rp {Number(stats?.total_volume || 0).toLocaleString("id-ID")}
-          </p>
-          <span className="block text-[11px] text-astro-emerald">✓ Dari {stats?.paid_count || 0} transaksi berhasil</span>
-        </div>
-
-        <div className="astro-card rounded-2xl p-5 shadow-soft space-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-astro-slate">Saldo Dompet Tersedia</span>
-          <p className="text-2xl font-extrabold text-astro-purpleGlow tabular-nums">
-            Rp {Number(merchantRow?.balance || 0).toLocaleString("id-ID")}
-          </p>
-          <span className="block text-[11px] text-astro-slate">Siap ditarik ke rekening</span>
-        </div>
-
-        <div className="astro-card rounded-2xl p-5 shadow-soft space-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-astro-slate">Invoice Pending</span>
-          <p className="text-2xl font-extrabold text-astro-gold tabular-nums">
-            {stats?.pending_count || 0}
-          </p>
-          <span className="block text-[11px] text-astro-slate">Menunggu pembayaran pelanggan</span>
-        </div>
-
-        <div className="astro-card rounded-2xl p-5 shadow-soft space-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-astro-slate">Total Semua Tagihan</span>
-          <p className="text-2xl font-extrabold text-white tabular-nums">
-            {stats?.total_count || 0}
-          </p>
-          <span className="block text-[11px] text-astro-slate">Akumulasi seluruh waktu</span>
-        </div>
-      </div>
-
-      {/* API Key Fast Snippet */}
-      {apiKey && (
-        <div className="rounded-2xl border border-astro-purple/20 bg-astro-purple/5 p-5 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <span className="text-xs font-bold text-astro-purpleGlow uppercase tracking-wider">Kredensial API Live Aktif</span>
-            <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-white">
-              <span>Public: <b className="text-astro-cyan">{apiKey.public_key}</b></span>
-              <span>·</span>
-              <span>Secret: <b className="text-astro-slate">{apiKey.secret_key.slice(0, 10)}••••••••••</b></span>
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="card-white p-6 space-y-2">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs font-bold uppercase tracking-wider">Saldo Tersedia</span>
+            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-800 flex items-center justify-center">
+              <i className="fa-solid fa-wallet"></i>
             </div>
           </div>
-          <Link
-            href="/dashboard/keys"
-            className="w-fit rounded-xl border border-astro-purple/30 bg-astro-purple/10 px-3.5 py-1.5 text-xs font-bold text-astro-purpleGlow hover:bg-astro-purple hover:text-white transition-all"
-          >
-            Kelola Kunci API →
-          </Link>
+          <div className="text-2xl font-black text-slate-950 font-mono">
+            Rp {currentBalance.toLocaleString("id-ID")}
+          </div>
+          <div className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+            <i className="fa-solid fa-arrow-trend-up"></i> Siap ditarik kapan saja
+          </div>
         </div>
-      )}
+
+        <div className="card-white p-6 space-y-2">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs font-bold uppercase tracking-wider">Total Volume</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <i className="fa-solid fa-money-bill-trend-up"></i>
+            </div>
+          </div>
+          <div className="text-2xl font-black text-slate-950 font-mono">
+            Rp {totalVolume.toLocaleString("id-ID")}
+          </div>
+          <div className="text-[11px] text-slate-500 font-semibold">
+            {stats?.paid_count || 0} transaksi berhasil
+          </div>
+        </div>
+
+        <div className="card-white p-6 space-y-2">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs font-bold uppercase tracking-wider">Pending Pembayaran</span>
+            <div className="w-8 h-8 rounded-lg bg-yellow-50 text-yellow-600 flex items-center justify-center">
+              <i className="fa-solid fa-clock"></i>
+            </div>
+          </div>
+          <div className="text-2xl font-black text-slate-950 font-mono">
+            {stats?.pending_count || 0}
+          </div>
+          <div className="text-[11px] text-slate-500 font-semibold">Menunggu transfer pelanggan</div>
+        </div>
+
+        <div className="card-white p-6 space-y-2">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs font-bold uppercase tracking-wider">Status Integrasi</span>
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <i className="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+          <div className="text-2xl font-black text-emerald-600">AKTIF</div>
+          <div className="text-[11px] text-slate-500 font-semibold">Webhook & Polling siap</div>
+        </div>
+      </div>
 
       {/* Recent Invoices Table */}
-      <div className="astro-card rounded-3xl p-6 shadow-soft space-y-4">
+      <div className="card-white p-6 space-y-5">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white">Transaksi Terakhir</h2>
-          <Link href="/dashboard/invoices" className="text-xs font-semibold text-astro-purpleGlow hover:underline">
-            Lihat Semua →
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900">Transaksi Terbaru</h2>
+            <p className="text-xs text-slate-500">Riwayat 5 transaksi QRIS terakhir Anda</p>
+          </div>
+          <Link
+            href="/dashboard/invoices"
+            className="text-xs font-bold text-purple-800 hover:text-purple-950 flex items-center gap-1"
+          >
+            Lihat Semua <i className="fa-solid fa-arrow-right text-[10px]"></i>
           </Link>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-astro-border text-astro-slate uppercase tracking-wider">
+            <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
               <tr>
-                <th className="pb-3 font-bold">No. Invoice</th>
-                <th className="pb-3 font-bold">Pelanggan</th>
-                <th className="pb-3 font-bold">Total Tagihan</th>
-                <th className="pb-3 font-bold">Saluran</th>
-                <th className="pb-3 font-bold">Status</th>
-                <th className="pb-3 font-bold">Waktu</th>
-                <th className="pb-3 font-bold text-right">Aksi</th>
+                <th className="p-3.5">No. Invoice</th>
+                <th className="p-3.5">Pelanggan</th>
+                <th className="p-3.5">Nominal</th>
+                <th className="p-3.5">Saluran</th>
+                <th className="p-3.5">Status</th>
+                <th className="p-3.5">Waktu</th>
+                <th className="p-3.5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-astro-border/50 text-astro-text">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {recentInvoices.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-astro-slate">
-                    Belum ada transaksi. Gunakan API atau tombol test untuk membuat invoice baru.
+                  <td colSpan={7} className="p-8 text-center text-slate-400">
+                    Belum ada transaksi invoice dibuat.
                   </td>
                 </tr>
               ) : (
-                recentInvoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-astro-dark/50 transition-colors">
-                    <td className="py-3.5 font-mono font-bold text-white">{inv.id}</td>
-                    <td className="py-3.5 font-medium">{inv.customer_name || "-"}</td>
-                    <td className="py-3.5 font-bold font-mono text-white">
+                recentInvoices.map((inv: any) => (
+                  <tr key={inv.id} className="hover:bg-slate-50/80 transition">
+                    <td className="p-3.5 font-mono font-bold text-slate-900">{inv.invoice_number}</td>
+                    <td className="p-3.5 text-slate-700">{inv.customer_name || "Tamu"}</td>
+                    <td className="p-3.5 font-mono font-bold text-slate-900">
                       Rp {Number(inv.total_amount).toLocaleString("id-ID")}
                     </td>
-                    <td className="py-3.5">
-                      <span className="rounded bg-astro-card px-2 py-0.5 font-mono text-[10px] text-astro-cyan border border-astro-border">
-                        {inv.payment_channel}
-                      </span>
+                    <td className="p-3.5">
+                      <span className="badge-purple text-[10px]">{inv.payment_channel}</span>
                     </td>
-                    <td className="py-3.5">
+                    <td className="p-3.5">
                       {inv.status === "PAID" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                          LUNAS
+                        <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold text-[11px] border border-emerald-200">
+                          <i className="fa-solid fa-circle-check text-[10px]"></i> SUKSES
                         </span>
                       ) : inv.status === "PENDING" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-bold text-amber-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                          PENDING
+                        <span className="inline-flex items-center gap-1 text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded-full font-bold text-[11px] border border-yellow-200">
+                          <i className="fa-solid fa-clock text-[10px]"></i> PENDING
                         </span>
                       ) : (
-                        <span className="rounded-full bg-rose-500/10 px-2.5 py-0.5 text-[11px] font-bold text-rose-400">
-                          {inv.status}
+                        <span className="inline-flex items-center gap-1 text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full font-bold text-[11px] border border-rose-200">
+                          <i className="fa-solid fa-circle-xmark text-[10px]"></i> EXPIRED
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 text-astro-slate">
-                      {inv.created_at ? new Date(inv.created_at).toLocaleString("id-ID") : "-"}
+                    <td className="p-3.5 text-slate-500">
+                      {new Date(inv.created_at).toLocaleString("id-ID")}
                     </td>
-                    <td className="py-3.5 text-right">
+                    <td className="p-3.5 text-right">
                       <Link
                         href={`/pay/${inv.id}`}
                         target="_blank"
-                        className="rounded-lg border border-astro-border bg-astro-dark px-2.5 py-1 text-[11px] font-semibold text-astro-slate hover:text-white hover:border-astro-purple transition-all"
+                        className="text-purple-800 hover:text-purple-950 font-bold"
                       >
-                        Buka QRIS ↗
+                        Buka QR <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
                       </Link>
                     </td>
                   </tr>

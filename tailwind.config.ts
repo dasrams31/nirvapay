@@ -9,30 +9,44 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        astro: {
-          dark: "#0b0d13",
-          card: "#121620",
-          cardHover: "#181d2a",
-          border: "#232938",
-          purple: "#7c3aed",
-          purpleGlow: "#8b5cf6",
-          gold: "#f59e0b",
-          cyan: "#06b6d4",
-          emerald: "#10b981",
-          rose: "#f43f5e",
-          slate: "#94a3b8",
-          text: "#f8fafc",
+        canvas: "#F8FAFC",
+        surface: "#FFFFFF",
+        subtle: "#F1F5F9",
+        borderLight: "#E2E8F0",
+        borderMedium: "#CBD5E1",
+        purple: {
+          50: "#FAF5FF",
+          100: "#F3E8FF",
+          200: "#E9D5FF",
+          300: "#D8B4FE",
+          400: "#C084FC",
+          500: "#A855F7",
+          600: "#9333EA",
+          700: "#7E22CE",
+          800: "#700070", // Official NirvaPay Purple
+          900: "#4A1B9D", // Tekhelet Deep Purple
+          950: "#3B0764",
+        },
+        gold: {
+          50: "#FEFCE8",
+          100: "#FEF9C3",
+          200: "#FEF08A",
+          300: "#FDE047",
+          400: "#FFCC00", // Official Jonquil Gold
+          500: "#EAB308",
+          600: "#CA8A04",
+          700: "#A16207",
+          800: "#854D0E",
+          900: "#713F12",
         },
       },
       fontFamily: {
-        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
-      },
-      boxShadow: {
-        glow: "0 0 25px -5px rgba(124, 58, 237, 0.3)",
-        soft: "0 10px 30px -10px rgba(0, 0, 0, 0.5)",
+        sans: ['"Plus Jakarta Sans"', "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
       },
     },
   },
   plugins: [],
 };
+
 export default config;
