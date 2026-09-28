@@ -11,9 +11,7 @@ export default async function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-11 h-11 rounded-2xl bg-purple-800 flex items-center justify-center text-white font-black text-xl shadow-md group-hover:scale-105 transition">
-                N
-              </div>
+              <img src="/logo.svg" alt="NirvaPay" className="w-11 h-11 rounded-2xl shadow-md group-hover:scale-105 transition" />
               <div>
                 <span className="text-2xl font-black tracking-tight text-slate-950">
                   Nirva<span className="text-purple-800">Pay</span>
@@ -66,9 +64,8 @@ export default async function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section with Dot Pattern & Animated Mascot Showcase */}
+      {/* Hero Section */}
       <main className="flex-grow relative hero-pattern">
-        {/* Ambient Color Accents */}
         <div className="absolute top-10 left-1/4 w-96 h-96 bg-purple-300/30 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute top-20 right-10 w-96 h-96 bg-yellow-300/30 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -298,9 +295,7 @@ export default async function LandingPage() {
       <footer className="bg-white border-t border-slate-200 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-purple-800 text-white flex items-center justify-center font-bold text-sm">
-              N
-            </div>
+            <img src="/logo.svg" alt="NirvaPay" className="w-8 h-8 rounded-lg shadow-sm" />
             <div>
               <span className="text-sm font-black text-slate-900">NirvaPay Platform</span>
               <p className="text-[11px] text-slate-400 font-medium">
@@ -311,9 +306,6 @@ export default async function LandingPage() {
           <div className="flex items-center gap-6 text-xs font-bold text-slate-600">
             <Link href="/login" className="hover:text-purple-800">
               Login Merchant
-            </Link>
-            <Link href="/admin/login" className="hover:text-purple-800 text-purple-900 font-mono">
-              Aeternum Admin
             </Link>
             <Link href="/dashboard" className="hover:text-purple-800">
               Console

@@ -18,9 +18,7 @@ export default async function DashboardLayout({
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
         <div className="h-16 flex items-center px-6 border-b border-slate-200 justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-purple-800 flex items-center justify-center text-white font-black text-sm">
-              N
-            </div>
+            <img src="/logo.svg" alt="NirvaPay" className="w-8 h-8 rounded-lg shadow-sm" />
             <span className="text-xl font-black tracking-tight text-slate-950">
               Nirva<span className="text-purple-800">Pay</span>
             </span>

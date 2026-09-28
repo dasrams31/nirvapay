@@ -1,118 +1,116 @@
-# 💳 NirvaPay — Self-Hosted Multi-Merchant QRIS & Aggregator SaaS
+# 💳 NirvaPay — Self-Hosted Multi-Merchant QRIS Gateway & Aggregator SaaS
 
 <p align="center">
-  <img src="https://nirvapay.dasrams.biz.id/favicon.svg" alt="NirvaPay Logo" width="90">
+  <img src="https://nirvapay.dasrams.biz.id/logo.svg" alt="NirvaPay Logo" width="120" height="120">
 </p>
 
 <p align="center">
-  <b>Multi-Tenant QRIS Payment Gateway & Aggregator SaaS Platform</b><br>
-  Direct EMVCo Dynamic QRIS Injection · Zero Fee Markup · Real-time Auto Settlement
+  <strong>Next-Gen Self-Hosted QRIS Dynamic Gateway & Merchant SaaS Aggregator</strong><br>
+  <em>Designed with High-Precision Architecture (Next.js 16 + Express.js + PostgreSQL)</em>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js" alt="Next.js 16">
-  <img src="https://img.shields.io/badge/Express.js-4.21-000000?style=flat-square&logo=express" alt="Express.js">
-  <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/Styling-Astro%20Design%20Tokens-BC52EE?style=flat-square&logo=astro" alt="Astro Styling">
-  <img src="https://img.shields.io/badge/License-Proprietary-7C3AED?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/Framework-Next.js%2016-black?style=flat-square&logo=next.js" alt="Next.js">
+  <img src="https://img.shields.io/badge/Backend-Express.js-10B981?style=flat-square&logo=express" alt="Express">
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square&logo=postgresql" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Standard-EMVCo%20QRIS-700070?style=flat-square" alt="QRIS">
+  <img src="https://img.shields.io/badge/Security-HMAC--SHA256-FFCC00?style=flat-square" alt="HMAC">
 </p>
 
 ---
 
-## 🌟 Fitur Utama
+## 🚀 Overview
 
-- **🚀 Modern Architecture**: Full-stack Next.js 16 App Router dengan backend Express.js server & PostgreSQL database pooling.
-- **🎨 Astro Design System**: Tampilan UI modern, responsif, dark palette (`#0B0D13`), aksen Astro Purple (`#7C3AED`), dan micro-ergonomics tinggi.
-- **⚡ Dynamic EMVCo QRIS Generator**: Injeksi otomatis Tag 54 nominal dan CRC16-CCITT checksum tanpa API pihak ketiga.
-- **🛡️ Multi-Channel Mutation Aggregator**: Integrasi mutasi otomatis dari GoPay/GoBiz, DANA Bisnis, KlikQRIS, dan BukaOlshop.
-- **🔑 Multi-Merchant & API Keys**: Manajemen multi-merchant mandiri, secret key generation, dan otentikasi Bearer API standar.
-- **🔔 Webhook Engine & Event Logging**: Pengiriman webhook callback otomatis dengan HMAC-SHA256 signature verification.
-- **📊 Real-time Dashboard & Export**: Pelacakan status tagihan real-time, grafik omset, dan ekspor laporan transaksi format CSV.
+**NirvaPay** adalah platform SaaS agregator dan gateway pembayaran QRIS dinamis (*Dynamic EMVCo QRIS*) mandiri yang dirancang untuk toko online, bot Telegram digital, web apps, dan developer. 
+
+Dibangun dengan arsitektur non-glassmorphism, tema klasik *Crisp White Canvas*, *Tekhelet Purple* (`#700070`), dan *Jonquil Gold* (`#FFCC00`), menghadirkan performa settlement instan tanpa biaya potongan pihak ketiga.
 
 ---
 
-## 🛠️ Tech Stack
+## 🌟 Key Features
 
-| Layer | Teknologi |
-|---|---|
-| **Frontend UI** | Next.js 16 (App Router), React 19, Tailwind CSS (Astro Design Tokens) |
-| **Backend API** | Express.js, Next.js API Route Handlers, Node.js v26+ |
-| **Database** | PostgreSQL (`nirvapay` DB) with `postgres.js` high-performance driver |
-| **QR Engine** | EMVCo Tag 54 Injector & CRC16-CCITT Checksum Calculator |
-| **Security** | JWT (jsonwebtoken), bcryptjs, HMAC-SHA256 webhook signatures |
+- ⚡ **Dynamic QRIS Generator**: Membuat QR code berstandar QRIS Nasional (EMVCo) dengan kode unik otomatis untuk verifikasi instan.
+- 🔄 **Multi-Channel Settlement**: Mendukung direct connection GoPay Merchant, DANA Bisnis, KlikQRIS, dan Push Notification BukaOlshop.
+- 🛡️ **HMAC-SHA256 Webhook Security**: Pengiriman notifikasi callback otomatis dengan signature kriptografi untuk menjamin validitas transaksi.
+- 📊 **Tactile Merchant Console**: Dashboard analitik real-time, manajemen Kunci API (Public/Secret), ekspor laporan CSV/Excel, dan invoice tracker.
+- 🤖 **Telegram Bot & Webhook Ready**: Terintegrasi langsung dengan ekosistem Aeternum bot (@aeternum_premibot) & web store (@shop.dasrams.biz.id).
 
 ---
 
-## 🚀 Quick Start & Deployment
+## 🛠️ Tech Stack & Architecture
 
-### 1. Konfigurasi Environment (`.env`)
-```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nirvapay
-JWT_SECRET=AeternumNirvaPaySecretKey2026SecureSalt
-PORT=8098
-BASE_URL=https://nirvapay.dasrams.biz.id
-NEXT_PUBLIC_APP_URL=https://nirvapay.dasrams.biz.id
-ADMIN_TELEGRAM_ID=606533609
-TELEGRAM_BOT_TOKEN=8623661389:AAF0l4J-ZgZg9H_OqW4X9W0w1Y6X5Z7V3YQ
-NODE_ENV=production
+```text
+CLIENT / BROWSER / TELEGRAM BOT
+               │
+               ▼
+   [ Nginx Reverse Proxy ] (HTTPS / SSL)
+               │
+               ▼  Port :8098
+┌────────────────────────────────────────────────────────┐
+│  NirvaPay Server (server.js + Next.js App Router)      │
+│  ├── Express.js (Health, Raw Proxying, Cors)           │
+│  ├── Next.js 16 (Turbopack, SSR, API Route Handlers)   │
+│  └── Edge Auth & HMAC Token Verification Engine        │
+└──────────────────────────────┬─────────────────────────┘
+                               │
+                               ▼
+     [ PostgreSQL Database: nirvapay (Port 5432) ]
+     ├── merchants (Multi-Tenant Profile & Balance)
+     ├── api_keys (Live Public & Secret Keys)
+     ├── payment_invoices (Dynamic QRIS Invoices)
+     ├── merchant_connections (GoPay, DANA, KlikQRIS)
+     └── webhook_endpoints & webhook_logs
 ```
 
-### 2. Build & Jalankan Server
+---
+
+## 📖 REST API Quick Reference
+
+### 1. Membuat Tagihan QRIS Dinamis
 ```bash
+curl -X POST "https://nirvapay.dasrams.biz.id/api/v1/invoices" \
+  -H "x-api-key: pub_live_xxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 25000,
+    "customer_name": "Rama Danadipa",
+    "customer_email": "admin@nirvapay.dasrams.biz.id",
+    "customer_phone": "08123456789",
+    "payment_channel": "GOPAY",
+    "callback_url": "https://domainanda.com/api/webhook"
+  }'
+```
+
+### 2. Polling Status Pembayaran
+```bash
+curl -X GET "https://nirvapay.dasrams.biz.id/api/v1/invoices/INV-1024/status"
+```
+
+---
+
+## 💻 Self-Hosting & Development
+
+```bash
+# Clone repository
+git clone https://github.com/dasrams31/nirvapay.git
+cd nirvapay
+
 # Install dependencies
 npm install
 
-# Build production bundle
+# Build Next.js
 npm run build
 
-# Start production server (Port 8098)
-node server.js
-```
-
-### 3. Systemd Service (`/etc/systemd/system/nirvapay.service`)
-```ini
-[Unit]
-Description=NirvaPay Multi-Merchant QRIS Gateway SaaS (Next.js + Express)
-After=network.target postgresql.service
-
-[Service]
-Type=simple
-User=ubuntu
-WorkingDirectory=/home/ubuntu/scripts/nirvapay
-ExecStart=/home/ubuntu/.local/bin/node server.js
-Restart=always
-RestartSec=5
-Environment=PATH=/home/ubuntu/.local/bin:/usr/local/bin:/usr/bin:/bin
-Environment=NODE_ENV=production
-Environment=PORT=8098
-
-[Install]
-WantedBy=multi-user.target
+# Start server
+npm start
 ```
 
 ---
 
-## 📖 Endpoint Dokumentasi API
-
-### Base URL: `https://nirvapay.dasrams.biz.id/api/v1`
-
-| Method | Endpoint | Keterangan |
-|---|---|---|
-| `POST` | `/api/v1/auth/register` | Mendaftarkan akun merchant baru |
-| `POST` | `/api/v1/auth/login` | Login merchant & generate JWT session |
-| `POST` | `/api/v1/invoices` | Membuat transaksi QRIS Dinamis baru |
-| `GET` | `/api/v1/invoices` | Mengambil riwayat daftar invoice |
-| `GET` | `/api/v1/invoices/:id/status` | Mengecek status pembayaran real-time |
-| `GET` | `/api/v1/invoices/:id/qr` | Menampilkan gambar PNG kode QRIS |
-| `GET` | `/api/v1/keys` | Mengambil daftar Kunci API aktif |
-| `POST` | `/api/v1/keys` | Regenerate API Key baru |
-| `GET` | `/api/v1/export/csv` | Mengunduh rekap laporan transaksi CSV |
-| `POST` | `/webhook/gopay` | Ingestion mutasi GoPay / GoBiz |
-| `POST` | `/webhook/dana` | Ingestion mutasi DANA Bisnis |
-| `POST` | `/webhook/klikqris` | Ingestion webhook KlikQRIS |
+## 🔒 Security & Boundaries
+- Never commit `.env` credentials, private secret keys, or database passwords.
+- Always use `x-api-key` header for API authentication.
+- Webhook endpoints require strict HMAC verification.
 
 ---
-
-## 🔒 Lisensi & Hak Cipta
-© 2026 PT Aeternum Kreasikan Bersama · Dilindungi Hak Cipta.
-Dikelola di bawah ekosistem server `dasrams.biz.id`.
+© 2026 **PT Aeternum Kreasikan Bersama**. Maintained by **@dasrams31**.

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,10 +27,10 @@ export default function LoginPage() {
       if (data.success) {
         window.location.href = "/dashboard";
       } else {
-        setError(data.message || "Email atau password salah.");
+        setError(data.message || "Email atau password salah");
       }
     } catch (err: any) {
-      setError(err.message || "Gagal menghubungi server.");
+      setError(err.message || "Gagal menghubungi server");
     } finally {
       setLoading(false);
     }
@@ -40,9 +41,7 @@ export default function LoginPage() {
       {/* Top Brand Bar */}
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-800 flex items-center justify-center text-white font-black text-xl shadow-md">
-            N
-          </div>
+          <img src="/logo.svg" alt="NirvaPay" className="w-10 h-10 rounded-xl shadow-md" />
           <span className="text-2xl font-black tracking-tight text-slate-950">
             Nirva<span className="text-purple-800">Pay</span>
           </span>
@@ -62,9 +61,9 @@ export default function LoginPage() {
             <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-800 flex items-center justify-center mx-auto text-xl shadow-sm">
               <i className="fa-solid fa-key"></i>
             </div>
-            <h1 className="text-2xl font-black text-slate-950 tracking-tight">Masuk ke Portal</h1>
+            <h1 className="text-2xl font-black text-slate-950 tracking-tight">Masuk Merchant</h1>
             <p className="text-xs text-slate-500 font-medium">
-              Kelola pembayaran QRIS, webhook, dan mutasi saldo real-time
+              Kelola pembayaran QRIS dan pantau transaksi live
             </p>
           </div>
 
@@ -77,13 +76,13 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Email Akun</label>
+              <label className="text-xs font-bold text-slate-700">Email Merchant</label>
               <div className="relative">
                 <i className="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                 <input
                   type="email"
                   required
-                  placeholder="merchant@domain.com"
+                  placeholder="admin@nirvapay.dasrams.biz.id"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-purple-800 focus:bg-white transition"
