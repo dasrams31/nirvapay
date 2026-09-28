@@ -14,7 +14,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden">
-      {/* Sidebar (11 Modul Lengkap Sesuai Versi Asli) */}
+      {/* Sidebar Lengkap (10 Modul Terstruktur) */}
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 select-none">
         <div className="p-5 flex-1 overflow-y-auto">
           {/* Brand */}
@@ -53,6 +53,12 @@ export default async function DashboardLayout({
               <i className="fa-solid fa-chart-pie w-4 text-purple-700"></i> Ringkasan
             </Link>
             <Link
+              href="/dashboard/analytics"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-purple-50 hover:text-purple-800 transition"
+            >
+              <i className="fa-solid fa-chart-line w-4 text-purple-700"></i> Analitik & Grafik
+            </Link>
+            <Link
               href="/dashboard/invoices"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-purple-50 hover:text-purple-800 transition"
             >
@@ -65,10 +71,16 @@ export default async function DashboardLayout({
               <i className="fa-solid fa-money-bill-transfer w-4 text-purple-700"></i> Mutasi Masuk
             </Link>
             <Link
+              href="/dashboard/settlements"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-purple-50 hover:text-purple-800 transition"
+            >
+              <i className="fa-solid fa-arrow-up-right-from-square w-4 text-purple-700"></i> Tarik Saldo
+            </Link>
+            <Link
               href="/dashboard/connections"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-purple-50 hover:text-purple-800 transition"
             >
-              <i className="fa-solid fa-network-wired w-4 text-purple-700"></i> Koneksi Merchant
+              <i className="fa-solid fa-network-wired w-4 text-purple-700"></i> Koneksi Saluran
             </Link>
             <Link
               href="/dashboard/keys"
@@ -81,6 +93,12 @@ export default async function DashboardLayout({
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-purple-50 hover:text-purple-800 transition"
             >
               <i className="fa-solid fa-bolt w-4 text-purple-700"></i> Webhooks & Callback
+            </Link>
+            <Link
+              href="/dashboard/team"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 hover:bg-purple-50 hover:text-purple-800 transition"
+            >
+              <i className="fa-solid fa-users-gear w-4 text-purple-700"></i> Manajemen Tim
             </Link>
             <Link
               href="/dashboard/docs"
@@ -133,10 +151,10 @@ export default async function DashboardLayout({
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href="/dashboard/docs"
-              className="text-xs font-bold text-slate-600 hover:text-purple-800 px-3 py-1.5 rounded-xl border border-slate-200 transition flex items-center gap-1.5"
+              href="/dashboard/settlements"
+              className="btn-purple text-xs flex items-center gap-1.5 shadow-sm"
             >
-              <i className="fa-solid fa-code text-purple-700"></i> API Reference
+              <i className="fa-solid fa-money-bill-transfer text-yellow-400"></i> Tarik Saldo
             </Link>
             <div className="h-4 w-px bg-slate-200"></div>
             <span className="text-xs font-semibold text-slate-500 font-mono">
