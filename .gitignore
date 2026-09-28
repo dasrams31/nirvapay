@@ -1,8 +1,12 @@
-venv/
 node_modules/
-gopay_auth/node_modules/
-__pycache__/
-*.pyc
-*.db
+.next/
 .env
+.env*.local
+*.log
+dist/
+build/
 .DS_Store
+*.tsbuildinfo
+legacy_python/
+data/*.db
+data/*.sqlite

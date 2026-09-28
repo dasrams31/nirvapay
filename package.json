@@ -1,0 +1,42 @@
+{
+  "name": "nirvapay",
+  "version": "2.0.0",
+  "description": "NirvaPay — Next.js & Express.js Multi-Tenant QRIS Payment Gateway SaaS",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 8098",
+    "build": "next build",
+    "start": "next start -p 8098",
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie": "^1.0.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^1.16.0",
+    "next": "^16.2.10",
+    "postgres": "^3.4.7",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie": "^0.6.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/node": "^22.13.9",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.2"
+  }
+}
