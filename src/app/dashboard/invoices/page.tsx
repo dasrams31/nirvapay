@@ -9,92 +9,95 @@ export default async function InvoicesPage() {
   if (!merchant) return null;
 
   const invoices = await sql`
-    SELECT id, invoice_number, customer_name, customer_email, amount, unique_code, total_amount, payment_channel, status, paid_at, created_at
+    SELECT id, invoice_number, customer_name, customer_email, amount, unique_code, total_amount, payment_channel, status, created_at, paid_at
     FROM payment_invoices
     WHERE merchant_id = ${merchant.merchantId}
     ORDER BY created_at DESC
-    LIMIT 100;
   `;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-8 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Daftar Transaksi & Invoice</h1>
-          <p className="mt-1 text-xs text-astro-slate">Kelola dan pantau status seluruh tagihan pembayaran QRIS</p>
+          <h1 className="text-2xl font-black text-slate-950 tracking-tight">Daftar Transaksi & Invoice</h1>
+          <p className="text-xs text-slate-500 font-medium">
+            Riwayat seluruh transaksi pembayaran QRIS masuk ke merchant Anda
+          </p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <a
-            href="/api/v1/export/csv"
-            className="rounded-xl bg-astro-purple px-4 py-2 text-xs font-bold text-white shadow-glow hover:bg-astro-purpleGlow transition-all"
-          >
-            📥 Ekspor CSV
-          </a>
-        </div>
+        <a
+          href="/api/v1/export/csv"
+          className="btn-purple text-xs flex items-center gap-2 shadow-sm shrink-0"
+        >
+          <i className="fa-solid fa-file-csv"></i> Unduh Laporan CSV
+        </a>
       </div>
 
-      <div className="astro-card rounded-3xl p-6 shadow-soft space-y-4">
-        <div className="overflow-x-auto">
+      <div className="card-white p-6 space-y-5">
+        <div className="overflow-x-auto border border-slate-200 rounded-xl">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-astro-border text-astro-slate uppercase tracking-wider">
+            <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
               <tr>
-                <th className="pb-3 font-bold">ID Invoice</th>
-                <th className="pb-3 font-bold">Ref Toko</th>
-                <th className="pb-3 font-bold">Pelanggan</th>
-                <th className="pb-3 font-bold">Nominal Pokok</th>
-                <th className="pb-3 font-bold">Kode Unik</th>
-                <th className="pb-3 font-bold">Total Tagihan</th>
-                <th className="pb-3 font-bold">Status</th>
-                <th className="pb-3 font-bold">Waktu Buat</th>
-                <th className="pb-3 font-bold text-right">Aksi</th>
+                <th className="p-3.5">No. Invoice</th>
+                <th className="p-3.5">Pelanggan</th>
+                <th className="p-3.5">Nominal Pokok</th>
+                <th className="p-3.5">Kode Unik</th>
+                <th className="p-3.5">Total Bayar</th>
+                <th className="p-3.5">Saluran</th>
+                <th className="p-3.5">Status</th>
+                <th className="p-3.5">Waktu Dibuat</th>
+                <th className="p-3.5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-astro-border/50 text-astro-text">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {invoices.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-astro-slate">
-                    Belum ada transaksi invoice.
+                  <td colSpan={9} className="p-8 text-center text-slate-400">
+                    Belum ada transaksi invoice ditemukan.
                   </td>
                 </tr>
               ) : (
-                invoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-astro-dark/50 transition-colors">
-                    <td className="py-3.5 font-mono font-bold text-white">{inv.id}</td>
-                    <td className="py-3.5 font-mono text-astro-slate">{inv.invoice_number}</td>
-                    <td className="py-3.5 font-medium">{inv.customer_name || "-"}</td>
-                    <td className="py-3.5 font-mono">Rp {Number(inv.amount).toLocaleString("id-ID")}</td>
-                    <td className="py-3.5 font-mono text-astro-gold">+{inv.unique_code}</td>
-                    <td className="py-3.5 font-bold font-mono text-white">
+                invoices.map((inv: any) => (
+                  <tr key={inv.id} className="hover:bg-slate-50/80 transition">
+                    <td className="p-3.5 font-mono font-bold text-slate-900">{inv.invoice_number}</td>
+                    <td className="p-3.5 text-slate-700">
+                      <div className="font-bold">{inv.customer_name || "Tamu"}</div>
+                      <div className="text-[10px] text-slate-400">{inv.customer_email || "-"}</div>
+                    </td>
+                    <td className="p-3.5 font-mono text-slate-700">
+                      Rp {Number(inv.amount).toLocaleString("id-ID")}
+                    </td>
+                    <td className="p-3.5 font-mono text-purple-800 font-bold">+{inv.unique_code}</td>
+                    <td className="p-3.5 font-mono font-bold text-slate-950">
                       Rp {Number(inv.total_amount).toLocaleString("id-ID")}
                     </td>
-                    <td className="py-3.5">
+                    <td className="p-3.5">
+                      <span className="badge-purple text-[10px]">{inv.payment_channel}</span>
+                    </td>
+                    <td className="p-3.5">
                       {inv.status === "PAID" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                          LUNAS
+                        <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold text-[11px] border border-emerald-200">
+                          <i className="fa-solid fa-circle-check text-[10px]"></i> SUKSES
                         </span>
                       ) : inv.status === "PENDING" ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-bold text-amber-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                          PENDING
+                        <span className="inline-flex items-center gap-1 text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded-full font-bold text-[11px] border border-yellow-200">
+                          <i className="fa-solid fa-clock text-[10px]"></i> PENDING
                         </span>
                       ) : (
-                        <span className="rounded-full bg-rose-500/10 px-2.5 py-0.5 text-[11px] font-bold text-rose-400">
-                          {inv.status}
+                        <span className="inline-flex items-center gap-1 text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full font-bold text-[11px] border border-rose-200">
+                          <i className="fa-solid fa-circle-xmark text-[10px]"></i> EXPIRED
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 text-astro-slate">
-                      {inv.created_at ? new Date(inv.created_at).toLocaleString("id-ID") : "-"}
+                    <td className="p-3.5 text-slate-500">
+                      {new Date(inv.created_at).toLocaleString("id-ID")}
                     </td>
-                    <td className="py-3.5 text-right">
+                    <td className="p-3.5 text-right">
                       <Link
                         href={`/pay/${inv.id}`}
                         target="_blank"
-                        className="rounded-lg border border-astro-border bg-astro-dark px-2.5 py-1 text-[11px] font-semibold text-astro-slate hover:text-white hover:border-astro-purple transition-all"
+                        className="text-purple-800 hover:text-purple-950 font-bold"
                       >
-                        Buka Pay ↗
+                        Buka Tagihan <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
                       </Link>
                     </td>
                   </tr>

@@ -13,10 +13,8 @@ async function startServer() {
   await app.prepare();
   const server = express();
 
-  // Basic Express Middlewares
+  // Basic Express Middlewares (Do not use express.json/urlencoded before Next.js handle so req stream stays undisturbed)
   server.use(cors({ origin: true, credentials: true }));
-  server.use(express.json({ limit: "10mb" }));
-  server.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
   // Custom Express Health Endpoint
   server.get("/health", (req, res) => {

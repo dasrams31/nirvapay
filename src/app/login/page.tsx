@@ -9,12 +9,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg(null);
+    setError("");
 
     try {
       const res = await fetch("/api/v1/auth/login", {
@@ -24,77 +24,119 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (data.success) {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       } else {
-        setErrorMsg(data.message || "Email atau password salah");
+        setError(data.message || "Email atau password salah.");
       }
-    } catch {
-      setErrorMsg("Terjadi gangguan koneksi");
+    } catch (err: any) {
+      setError(err.message || "Gagal menghubungi server.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-astro-dark px-4 py-12 astro-mesh text-astro-text selection:bg-astro-purple selection:text-white">
-      <div className="w-full max-w-md rounded-3xl border border-astro-border bg-astro-card p-8 shadow-glow space-y-6">
-        <div className="text-center">
-          <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-astro-purple to-astro-cyan shadow-glow font-black text-white">
-              N
+    <div className="min-h-screen hero-pattern flex flex-col justify-between p-4 sm:p-6 lg:p-8">
+      {/* Top Brand Bar */}
+      <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-800 flex items-center justify-center text-white font-black text-xl shadow-md">
+            N
+          </div>
+          <span className="text-2xl font-black tracking-tight text-slate-950">
+            Nirva<span className="text-purple-800">Pay</span>
+          </span>
+        </Link>
+        <Link
+          href="/register"
+          className="text-xs font-bold text-purple-800 hover:text-purple-950 flex items-center gap-1.5"
+        >
+          Belum punya akun? <strong>Daftar Merchant</strong> <i className="fa-solid fa-arrow-right text-[10px]"></i>
+        </Link>
+      </div>
+
+      {/* Main Form Box */}
+      <div className="w-full max-w-md mx-auto my-auto">
+        <div className="card-white p-8 md:p-10 shadow-xl space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-800 flex items-center justify-center mx-auto text-xl shadow-sm">
+              <i className="fa-solid fa-key"></i>
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">NirvaPay</span>
-          </Link>
-          <h1 className="text-2xl font-extrabold text-white">Masuk Merchant</h1>
-          <p className="mt-1 text-xs text-astro-slate">Kelola pembayaran QRIS dan pantau transaksi live</p>
+            <h1 className="text-2xl font-black text-slate-950 tracking-tight">Masuk ke Portal</h1>
+            <p className="text-xs text-slate-500 font-medium">
+              Kelola pembayaran QRIS, webhook, dan mutasi saldo real-time
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl flex items-center gap-2">
+              <i className="fa-solid fa-circle-exclamation"></i>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">Email Akun</label>
+              <div className="relative">
+                <i className="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input
+                  type="email"
+                  required
+                  placeholder="merchant@domain.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-purple-800 focus:bg-white transition"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700">Kata Sandi</label>
+              </div>
+              <div className="relative">
+                <i className="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-purple-800 focus:bg-white transition"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-purple w-full py-3 text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md disabled:opacity-50 mt-2"
+            >
+              {loading ? (
+                <>
+                  <i className="fa-solid fa-circle-notch fa-spin"></i> Memverifikasi...
+                </>
+              ) : (
+                <>
+                  Masuk Sekarang <i className="fa-solid fa-arrow-right"></i>
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="pt-2 text-center text-xs text-slate-500 font-medium">
+            Belum punya akun merchant?{" "}
+            <Link href="/register" className="text-purple-800 font-bold hover:underline">
+              Daftar Gratis
+            </Link>
+          </div>
         </div>
+      </div>
 
-        {errorMsg && (
-          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-center text-xs font-semibold text-rose-400">
-            {errorMsg}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-astro-slate">Email Merchant</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="nama@bisnis.com"
-              className="mt-1 w-full rounded-xl border border-astro-border bg-astro-dark px-3.5 py-2.5 text-sm text-white placeholder:text-astro-slate/40 focus:border-astro-purple focus:outline-none focus:ring-1 focus:ring-astro-purple"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-astro-slate">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="mt-1 w-full rounded-xl border border-astro-border bg-astro-dark px-3.5 py-2.5 text-sm text-white placeholder:text-astro-slate/40 focus:border-astro-purple focus:outline-none focus:ring-1 focus:ring-astro-purple"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-astro-purple py-3 text-sm font-bold text-white shadow-glow hover:bg-astro-purpleGlow disabled:opacity-50 transition-all cursor-pointer"
-          >
-            {loading ? "Memverifikasi..." : "Masuk ke Dashboard →"}
-          </button>
-        </form>
-
-        <p className="text-center text-xs text-astro-slate">
-          Belum punya akun merchant?{" "}
-          <Link href="/register" className="font-semibold text-astro-purpleGlow hover:underline">
-            Daftar Sekarang
-          </Link>
-        </p>
+      {/* Bottom Footer */}
+      <div className="max-w-7xl mx-auto w-full text-center text-xs text-slate-400 font-medium">
+        © 2026 PT Aeternum Kreasikan Bersama. Multi-Merchant QRIS Aggregator.
       </div>
     </div>
   );

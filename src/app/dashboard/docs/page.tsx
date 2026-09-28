@@ -1,93 +1,90 @@
 export default function DocsPage() {
   return (
-    <div className="space-y-8 max-w-5xl mx-auto text-astro-text">
+    <div className="space-y-8 max-w-5xl mx-auto text-slate-800">
       <div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Dokumentasi API NirvaPay</h1>
-        <p className="mt-1 text-xs md:text-sm text-astro-slate">
-          Panduan integrasi REST API Payment Gateway QRIS Dinamis NirvaPay
+        <h1 className="text-2xl md:text-3xl font-black text-slate-950 tracking-tight">
+          Dokumentasi Integrasi REST API & Webhook
+        </h1>
+        <p className="text-xs text-slate-500 font-medium">
+          Panduan integrasi cepat NirvaPay Gateway untuk Bot Telegram, Aplikasi Web, dan Backend Microservices
         </p>
       </div>
 
-      {/* Base URL */}
-      <div className="astro-card rounded-3xl p-6 shadow-soft space-y-3">
-        <h2 className="text-sm font-bold text-white uppercase tracking-wider">1. Base URL Server API</h2>
-        <div className="rounded-xl border border-astro-border bg-astro-dark p-3 font-mono text-xs text-astro-cyan">
-          https://nirvapay.dasrams.biz.id/api/v1
-        </div>
-        <p className="text-xs text-astro-slate leading-relaxed">
-          Gunakan header otentikasi <code className="text-astro-purpleGlow">Authorization: Bearer sec_live_xxx</code> pada setiap permintaan API.
-        </p>
-      </div>
+      <div className="space-y-6">
+        {/* Endpoint 1: Create Invoice */}
+        <div className="card-white p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="bg-emerald-100 text-emerald-800 font-mono font-black text-xs px-2.5 py-1 rounded-lg">
+              POST
+            </span>
+            <code className="text-xs font-mono font-bold text-slate-900">/api/v1/invoices</code>
+            <span className="badge-purple text-[10px] ml-auto">Membuat Tagihan QRIS</span>
+          </div>
 
-      {/* Create Invoice */}
-      <div className="astro-card rounded-3xl p-6 shadow-soft space-y-4">
-        <div className="flex items-center gap-2">
-          <span className="rounded-md bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 font-mono text-xs font-bold text-emerald-400">
-            POST
-          </span>
-          <span className="font-mono text-sm font-bold text-white">/invoices</span>
-        </div>
-        <p className="text-xs text-astro-slate">Membuat transaksi pembayaran QRIS Dinamis baru.</p>
+          <p className="text-xs text-slate-600">
+            Digunakan untuk membuat transaksi baru dan mengenerate gambar QRIS dinamis berstandar EMVCo.
+          </p>
 
-        <div className="space-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-astro-slate">Contoh Request Body (JSON)</span>
-          <pre className="rounded-2xl border border-astro-border bg-astro-dark p-4 font-mono text-xs text-astro-slate overflow-x-auto leading-relaxed">
-{`{
+          <div className="space-y-2">
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Header Wajib:</div>
+            <pre className="bg-slate-900 text-slate-100 p-3 rounded-xl text-xs font-mono overflow-x-auto">
+              {`x-api-key: pub_live_xxxxxx
+Content-Type: application/json`}
+            </pre>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Contoh Request Body JSON:</div>
+            <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono overflow-x-auto">
+              {`{
   "amount": 50000,
-  "merchant_ref": "ORDER-1001",
-  "customer_name": "Rama Danadipa",
-  "customer_email": "buyer@email.com",
-  "description": "Pembayaran Akun Premium #1001",
-  "callback_url": "https://yourapp.com/api/webhooks/nirvapay",
-  "use_unique_code": true
+  "customer_name": "Budi Santoso",
+  "customer_email": "budi@gmail.com",
+  "customer_phone": "08123456789",
+  "payment_channel": "GOPAY",
+  "callback_url": "https://api.domainanda.com/webhook"
 }`}
-          </pre>
-        </div>
+            </pre>
+          </div>
 
-        <div className="space-y-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-astro-slate">Contoh Response (200 OK)</span>
-          <pre className="rounded-2xl border border-astro-border bg-astro-dark p-4 font-mono text-xs text-emerald-400 overflow-x-auto leading-relaxed">
-{`{
+          <div className="space-y-2">
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Contoh Response JSON:</div>
+            <pre className="bg-slate-900 text-emerald-400 p-4 rounded-xl text-xs font-mono overflow-x-auto">
+              {`{
   "success": true,
-  "message": "Invoice created successfully",
-  "invoice": {
-    "invoice_id": "INV-20260928-A1B2",
-    "invoice_number": "ORDER-1001",
+  "data": {
+    "id": "INV-893120-X8Z9",
+    "invoice_number": "INV-893120-X8Z9",
     "amount": 50000,
-    "unique_code": 142,
-    "total_amount": 50142,
-    "qris_payload": "00020101021226610014COM.GO-JEK.WWW...",
-    "payment_url": "https://nirvapay.dasrams.biz.id/pay/INV-20260928-A1B2",
-    "qr_image_url": "https://nirvapay.dasrams.biz.id/api/v1/invoices/INV-20260928-A1B2/qr",
-    "status": "PENDING",
-    "expired_at": "2026-09-28T10:30:00.000Z"
+    "unique_code": 321,
+    "total_amount": 50321,
+    "payment_url": "https://nirvapay.dasrams.biz.id/pay/INV-893120-X8Z9",
+    "qr_image_url": "https://nirvapay.dasrams.biz.id/api/v1/invoices/INV-893120-X8Z9/qr",
+    "status": "PENDING"
   }
 }`}
+            </pre>
+          </div>
+        </div>
+
+        {/* Endpoint 2: Check Status */}
+        <div className="card-white p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="bg-blue-100 text-blue-800 font-mono font-black text-xs px-2.5 py-1 rounded-lg">
+              GET
+            </span>
+            <code className="text-xs font-mono font-bold text-slate-900">/api/v1/invoices/:id/status</code>
+            <span className="badge-purple text-[10px] ml-auto">Polling Status Transaksi</span>
+          </div>
+
+          <p className="text-xs text-slate-600">
+            Mengecek apakah pelanggan sudah membayar tagihan QRIS secara real-time.
+          </p>
+
+          <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono overflow-x-auto">
+            {`curl -X GET "https://nirvapay.dasrams.biz.id/api/v1/invoices/INV-893120-X8Z9/status"`}
           </pre>
         </div>
-      </div>
-
-      {/* Check Status */}
-      <div className="astro-card rounded-3xl p-6 shadow-soft space-y-4">
-        <div className="flex items-center gap-2">
-          <span className="rounded-md bg-astro-cyan/10 border border-astro-cyan/30 px-2.5 py-0.5 font-mono text-xs font-bold text-astro-cyan">
-            GET
-          </span>
-          <span className="font-mono text-sm font-bold text-white">/invoices/:invoice_id/status</span>
-        </div>
-        <p className="text-xs text-astro-slate">Mengecek status pembayaran invoice secara real-time.</p>
-
-        <pre className="rounded-2xl border border-astro-border bg-astro-dark p-4 font-mono text-xs text-astro-slate overflow-x-auto leading-relaxed">
-{`// Response
-{
-  "success": true,
-  "status": "PAID",
-  "invoice_id": "INV-20260928-A1B2",
-  "amount": 50000,
-  "total_amount": 50142,
-  "paid_at": "2026-09-28T10:18:24.000Z"
-}`}
-        </pre>
       </div>
     </div>
   );

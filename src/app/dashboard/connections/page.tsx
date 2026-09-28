@@ -5,12 +5,10 @@ import { useEffect, useState } from "react";
 export default function ConnectionsPage() {
   const [connections, setConnections] = useState<any[]>([]);
   const [channel, setChannel] = useState("GOPAY");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [accountName, setAccountName] = useState("");
-  const [staticQris, setStaticQris] = useState("");
-  const [webhookSecret, setWebhookSecret] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [accountIdentifier, setAccountIdentifier] = useState("");
+  const [credentialToken, setCredentialToken] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchConnections = async () => {
     try {
@@ -18,17 +16,11 @@ export default function ConnectionsPage() {
       const data = await res.json();
       if (data.success) {
         setConnections(data.connections);
-        if (data.connections.length > 0) {
-          const first = data.connections[0];
-          setChannel(first.channel || "GOPAY");
-          setAccountNumber(first.account_number || "");
-          setAccountName(first.account_name || "");
-          setStaticQris(first.static_qris || "");
-          setWebhookSecret(first.webhook_secret || "");
-        }
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,126 +28,159 @@ export default function ConnectionsPage() {
     fetchConnections();
   }, []);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setMsg(null);
+    setSubmitting(true);
     try {
       const res = await fetch("/api/v1/connections", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           channel,
-          account_number: accountNumber,
-          account_name: accountName,
-          static_qris: staticQris,
-          webhook_secret: webhookSecret,
-          auto_confirm: true,
+          account_identifier: accountIdentifier,
+          credential_token: credentialToken,
         }),
       });
       const data = await res.json();
       if (data.success) {
-        setMsg("✓ Pengaturan saluran pembayaran berhasil disimpan!");
-        await fetchConnections();
-      } else {
-        setMsg("⚠️ " + (data.message || "Gagal menyimpan"));
+        setAccountIdentifier("");
+        setCredentialToken("");
+        fetchConnections();
       }
+    } catch (err) {
+      console.error(err);
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-8 max-w-6xl mx-auto">
       <div>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">Saluran Pembayaran & QRIS Engine</h1>
-        <p className="mt-1 text-xs text-astro-slate">Konfigurasi akun QRIS statis merchant, webhook secret, dan auto-settlement</p>
+        <h1 className="text-2xl font-black text-slate-950 tracking-tight">Saluran Pembayaran & Mutasi</h1>
+        <p className="text-xs text-slate-500 font-medium">
+          Hubungkan akun GoPay Merchant, DANA Bisnis, KlikQRIS, atau BukaOlshop untuk verifikasi otomatis
+        </p>
       </div>
 
-      {msg && (
-        <div className="rounded-xl border border-astro-purple/30 bg-astro-purple/10 p-3 text-xs font-semibold text-astro-purpleGlow">
-          {msg}
-        </div>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Form Tambah Koneksi */}
+        <div className="lg:col-span-5 card-white p-6 md:p-8 space-y-5">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-base">
+              <i className="fa-solid fa-plus"></i>
+            </div>
+            <div>
+              <h2 className="text-sm font-extrabold text-slate-900">Hubungkan Saluran Baru</h2>
+              <p className="text-[11px] text-slate-500">Pilih e-wallet atau gateway provider</p>
+            </div>
+          </div>
 
-      <div className="astro-card rounded-3xl p-6 md:p-8 shadow-soft">
-        <form onSubmit={handleSave} className="space-y-5">
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-astro-slate">Pilih Saluran / Provider</label>
-            <select
-              value={channel}
-              onChange={(e) => setChannel(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-astro-border bg-astro-dark px-3.5 py-2.5 text-sm text-white focus:border-astro-purple focus:outline-none"
+          <form onSubmit={handleAdd} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">Jenis Saluran</label>
+              <select
+                value={channel}
+                onChange={(e) => setChannel(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-purple-800 focus:bg-white transition"
+              >
+                <option value="GOPAY">GoPay Merchant (Direct QRIS)</option>
+                <option value="KLIKQRIS">KlikQRIS Payment Aggregator</option>
+                <option value="DANA">DANA Bisnis QRIS</option>
+                <option value="BUKAOLSHOP">BukaOlshop Push Notification</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">Nomor Akun / Merchant ID</label>
+              <input
+                type="text"
+                required
+                placeholder="Misal: ID1026545081659 / 08123456789"
+                value={accountIdentifier}
+                onChange={(e) => setAccountIdentifier(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-purple-800 focus:bg-white transition"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">Secret Token / API Session Key</label>
+              <input
+                type="password"
+                required
+                placeholder="Bearer token / Session secret"
+                value={credentialToken}
+                onChange={(e) => setCredentialToken(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:border-purple-800 focus:bg-white transition"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn-purple w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 mt-2"
             >
-              <option value="GOPAY">GoPay / GoBiz Merchant (Direct EMVCo Dynamic)</option>
-              <option value="DANA">DANA Bisnis QRIS</option>
-              <option value="KLIKQRIS">KlikQRIS Payment Gateway</option>
-              <option value="BUKAOLSHOP">BukaOlshop Mutasi Otomatis</option>
-              <option value="MANUAL">Manual Bank Transfer / QRIS Statis Lainnya</option>
-            </select>
-          </div>
+              {submitting ? (
+                <>
+                  <i className="fa-solid fa-circle-notch fa-spin"></i> Menyimpan...
+                </>
+              ) : (
+                <>
+                  <i className="fa-solid fa-link"></i> Sambungkan Saluran
+                </>
+              )}
+            </button>
+          </form>
+        </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+        {/* Daftar Koneksi Aktif */}
+        <div className="lg:col-span-7 card-white p-6 md:p-8 space-y-5">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-astro-slate">Nama Merchant / Akun</label>
-              <input
-                type="text"
-                value={accountName}
-                onChange={(e) => setAccountName(e.target.value)}
-                placeholder="Contoh: Aeternum Store"
-                className="mt-1 w-full rounded-xl border border-astro-border bg-astro-dark px-3.5 py-2.5 text-sm text-white placeholder:text-astro-slate/40 focus:border-astro-purple focus:outline-none"
-              />
+              <h2 className="text-sm font-extrabold text-slate-900">Saluran Terhubung</h2>
+              <p className="text-[11px] text-slate-500">Daftar channel mutasi aktif untuk merchant Anda</p>
             </div>
+            <span className="badge-purple">{connections.length} Terdaftar</span>
+          </div>
 
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-astro-slate">Nomor Akun / ID Merchant</label>
-              <input
-                type="text"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder="Contoh: 08123456789 atau ID Merchant"
-                className="mt-1 w-full rounded-xl border border-astro-border bg-astro-dark px-3.5 py-2.5 text-sm text-white placeholder:text-astro-slate/40 focus:border-astro-purple focus:outline-none"
-              />
+          {loading ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              <i className="fa-solid fa-circle-notch fa-spin text-purple-800 text-lg mb-2"></i>
+              <div>Memuat daftar saluran...</div>
             </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-astro-slate">
-              String Payload QRIS Statis Asli (EMVCo)
-            </label>
-            <textarea
-              value={staticQris}
-              onChange={(e) => setStaticQris(e.target.value)}
-              placeholder="00020101021126610014COM.GO-JEK.WWW...6304XXXX"
-              rows={3}
-              className="mt-1 w-full rounded-xl border border-astro-border bg-astro-dark px-3.5 py-2.5 font-mono text-xs text-white placeholder:text-astro-slate/40 focus:border-astro-purple focus:outline-none"
-            />
-            <span className="text-[11px] text-astro-slate block mt-1">
-              *Jika dikosongkan, NirvaPay akan menggunakan default QRIS Merchant GoPay Aeternum terintegrasi.
-            </span>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-astro-slate">
-              Secret Key Forwarder Webhook
-            </label>
-            <input
-              type="text"
-              value={webhookSecret}
-              onChange={(e) => setWebhookSecret(e.target.value)}
-              placeholder="AeternumGoBiz2026Secret"
-              className="mt-1 w-full rounded-xl border border-astro-border bg-astro-dark px-3.5 py-2.5 text-sm text-white placeholder:text-astro-slate/40 focus:border-astro-purple focus:outline-none"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-xl bg-astro-purple px-6 py-2.5 text-sm font-bold text-white shadow-glow hover:bg-astro-purpleGlow disabled:opacity-50 transition-all cursor-pointer"
-          >
-            {saving ? "Menyimpan..." : "Simpan Pengaturan Saluran →"}
-          </button>
-        </form>
+          ) : connections.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              Belum ada saluran pembayaran terhubung. Silakan tambahkan di form sebelah kiri.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {connections.map((c: any) => (
+                <div
+                  key={c.id}
+                  className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between hover:border-purple-300 transition"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-sm">
+                      <i className="fa-solid fa-qrcode"></i>
+                    </div>
+                    <div>
+                      <div className="text-xs font-extrabold text-slate-900 flex items-center gap-2">
+                        {c.channel}
+                        <span className="badge-gold text-[9px]">ONLINE</span>
+                      </div>
+                      <div className="text-[11px] font-mono text-slate-500">{c.account_identifier}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold text-[10px] border border-emerald-200">
+                      <i className="fa-solid fa-check"></i> Siap Mutasi
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
